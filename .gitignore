@@ -6,3 +6,5 @@
 /dev/
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
+*.CondaPkg
+settings.json
