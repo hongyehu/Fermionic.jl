@@ -18,4 +18,9 @@ export State_fixed, nume, fixed_state, unfixed_state
 export eigensp, ssp, eigenqsp, sqsp, majorization_sp, majorization_qsp, n_avg, coef, rhom, rhomd, rhom2, trp
 export sigma_x, sigma_y, sigma_z, phase, hadamard, ucnot, swap
 export rhosp_mixed, eigensp_mixed
+
+include("model.jl")
+export Cartesian2Index, SpinFullFermiHubbard,SpinFullFermiHubbardSubspace,SpinFullRandomState
+export SpinFullRandomStateSubspace,GHZSubspace,measure!
+
 end # module

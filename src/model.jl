@@ -1,9 +1,4 @@
-using Fermionic
-using LinearAlgebra
-using SparseArrays
-using Arpack
-using PythonCall
-plt = pyimport("matplotlib.pyplot")
+
 function Cartesian2Index(C_coor::AbstractArray{<:Int64},Lattice::AbstractArray{<:Int64},Spin::Int)
     """
     Row first ordering. 
@@ -25,7 +20,7 @@ function Cartesian2Index(C_coor::AbstractArray{<:Int64},Lattice::AbstractArray{<
         error("Dimension not implemented")
     end
 end
-Cartesian2Index([1,1],[2,2],1)
+
 # Implement Spinfull Fermi-Hubbard model 
 """
 `FermiHubbard(Dimension::Int, t::Float64, U::Float64, δ::AbstractArray{<:AbstractFloat})`
@@ -176,45 +171,119 @@ function SpinFullFermiHubbardSubspace(
 end
 
 
-# function SpinFullRandomState(
-#     Lattice::AbstractArray{<:Int64}, 
-#     J::Dict{Any,Any}, 
-#     U::Float64, 
-#     δ::Dict{Any,Any}
-#     )
+function SpinFullRandomState(
+    Lattice::AbstractArray{<:Int64}, 
+    Sparse::Bool
+    )
+    dimension = length(Lattice)
+    if dimension == 1
+        pass
+    elseif dimension == 2
+        rows = Lattice[1]
+        cols = Lattice[2]
+        op_size = 2*rows*cols
+        if Sparse
+            state_ran_com = 2*rand(Complex{Float64},2^op_size).-1
+            state_ran_com = state_ran_com/sqrt(state_ran_com'*state_ran_com)
+            return sparse(state_ran_com)
+        else
+            state_ran_com = 2*rand(Complex{Float64},2^op_size).-1
+            state_ran_com = state_ran_com/sqrt(state_ran_com'*state_ran_com)
+            return state_ran_com
+        end
+    else
+        error("Dimension not implemented")
+    end
 
-
-rows = 2
-cols = 3
-J = Dict{Any,Any}()
-for j in 1:cols-1
-    J[((1,j),(1,j+1))] = 3.0
-    J[((2,j),(2,j+1))] = 3.0
 end
-for j in 1:cols
-    J[((1,j),(2,j))] = 2.0
-end
-J
 
-δ = Dict{Any,Any}()
-for i in 1:rows
-    for j in 1:cols
-        δ[((i,j),(i,j))] = 0.0
+function SpinFullRandomState(
+    Lattice::AbstractArray{<:Int64}, 
+    Sparse::Bool,
+    N::Int
+    )
+    # N is the number of particles working
+    dimension = length(Lattice)
+    if dimension == 1
+        pass
+    elseif dimension == 2
+        rows = Lattice[1]
+        cols = Lattice[2]
+        op_size = 2*rows*cols
+        if Sparse
+            state_ran_com = spzeros(Complex{Float64},2^op_size)
+            for i in 1:2^op_size
+                if sum(basis(Op(2*rows*cols))[i,:]) == N
+                    state_ran_com[i] = 2*rand(Complex{Float64},1)[1]-1
+                end
+            end
+            state_ran_com = state_ran_com/sqrt(state_ran_com'*state_ran_com)
+            return state_ran_com
+        else
+            state_ran_com = zeros(Complex{Float64},2^op_size)
+            for i in 1:2^op_size
+                if sum(basis(Op(2*rows*cols))[i,:]) == N
+                    state_ran_com[i] = 2*rand(Complex{Float64},1)[1]-1
+                end
+            end
+            state_ran_com = state_ran_com/sqrt(state_ran_com'*state_ran_com)
+            return state_ran_com
+        end
+    else
+        error("Dimension not implemented")
     end
 end
-Ham = SpinFullFermiHubbard([rows,cols],J,7.2,δ)
-# Matrix(Ham)
-vals, vecs = eigs(Ham, nev=30, which=:SR)
-# vals2,vecs2 = eigen(Matrix(Ham))
-vals[1:4]
-# vals2[1:4]
-plt.plot(vals, "o")
-plt.show()
-typeof(Ham)
-Ham_sub = SpinFullFermiHubbardSubspace([rows,cols],J,7.2,δ,6)
-vals, vecs = eigs(Ham_sub, nev=30, which=:SR)
-plt.plot(vals, "o")
-plt.show()
-b = Op_fixed(12,6)
-Matrix(b.basis)
-vals[1:5]
+
+function SpinFullRandomStateSubspace(
+    Lattice::AbstractArray{<:Int64}, 
+    Sparse::Bool,
+    N::Int
+    )
+    # N is the number of particles working
+    dimension = length(Lattice)
+    if dimension == 1
+        pass
+    elseif dimension == 2
+        rows = Lattice[1]
+        cols = Lattice[2]
+        op_size = 2*rows*cols
+        if Sparse
+            state_ran_com = 2*rand(Complex{Float64},binomial(2*rows*cols,N)).-1
+            state_ran_com = state_ran_com/sqrt(state_ran_com'*state_ran_com)
+            return sparse(state_ran_com)
+        else
+            state_ran_com = 2*rand(Complex{Float64},binomial(2*rows*cols,N)).-1
+            state_ran_com = state_ran_com/sqrt(state_ran_com'*state_ran_com)
+            return state_ran_com
+        end
+    else
+        error("Dimension not implemented")
+    end
+end
+function GHZSubspace(Lattice::AbstractArray{<:Int64}, 
+    N::Int)
+    # N is the number of particles working
+    dimension = length(Lattice)
+    if dimension == 1
+        pass
+    elseif dimension == 2
+        rows = Lattice[1]
+        cols = Lattice[2]
+        state = spzeros(Complex{Float64},binomial(2*rows*cols,N))
+        state[1]=1.0
+        state[end]=1.0
+        state = state/sqrt(state'*state)
+        return state
+    else
+        error("Dimension not implemented")
+    end
+end
+function measure!(state::AbstractArray{<:ComplexF64})
+    prob = abs.(state).^2
+    dist = Categorical(prob)
+    idn = rand(dist,1)[1]
+    state = spzeros(Complex{Float64},length(state))
+    state[idn] = 1.0
+    return idn,state
+end
+
