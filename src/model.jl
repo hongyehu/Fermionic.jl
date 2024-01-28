@@ -1,4 +1,3 @@
-
 function Cartesian2Index(C_coor::AbstractArray{<:Int64},Lattice::AbstractArray{<:Int64},Spin::Int)
     """
     Row first ordering. 
@@ -287,3 +286,7 @@ function measure!(state::AbstractArray{<:ComplexF64})
     return idn,state
 end
 
+function evolve!(state::AbstractArray{<:ComplexF64},Ham::AbstractArray{<:ComplexF64},dt::Float64)
+    state = exp(Matrix(-1im*Ham*dt))*state
+    return state
+end
