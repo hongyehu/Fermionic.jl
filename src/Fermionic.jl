@@ -22,5 +22,9 @@ export rhosp_mixed, eigensp_mixed
 include("model.jl")
 export Cartesian2Index, SpinFullFermiHubbard,SpinFullFermiHubbardSubspace,SpinFullRandomState
 export SpinFullRandomStateSubspace,GHZSubspace,measure!
+export Hopping, random_δ, PairingOperator
+
+include("shadow.jl")
+export ShadowBasis_krylov, ShadowBasis
 
 end # module

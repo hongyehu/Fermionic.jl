@@ -102,9 +102,9 @@ function SpinFullFermiHubbard(
 end
 function SpinFullFermiHubbardSubspace(
     Lattice::AbstractArray{<:Int64}, 
-    J::Dict{Any,Any}, 
+    J::Dict{Tuple{Tuple{Int,Int},Tuple{Int,Int}},Float64}, 
     U::Float64, 
-    δ::Dict{Any,Any},
+    δ::Dict{Tuple{Int,Int},Float64},
     N::Int
     )
     dimension = length(Lattice)
@@ -157,7 +157,7 @@ function SpinFullFermiHubbardSubspace(
         # Random Potential
         for i in 1:rows
             for j in 1:cols
-                Ham += δ[((i,j),(i,j))]*(
+                Ham += δ[(i,j)]*(
                     ada(o,Cartesian2Index([i,j],[rows,cols],1),Cartesian2Index([i,j],[rows,cols],1))+
                     ada(o,Cartesian2Index([i,j],[rows,cols],2),Cartesian2Index([i,j],[rows,cols],2))
                 )
@@ -289,4 +289,68 @@ end
 function evolve!(state::AbstractArray{<:ComplexF64},Ham::AbstractArray{<:ComplexF64},dt::Float64)
     state = exp(Matrix(-1im*Ham*dt))*state
     return state
+end
+
+
+function Hopping(Lattice::AbstractArray{<:Int}, Jh::Float64, Jv::Float64)
+    dimension = length(Lattice)
+    if dimension == 1
+        pass
+    elseif dimension == 2
+        rows = Lattice[1]
+        cols = Lattice[2]
+        J = Dict{Tuple{Tuple{Int,Int},Tuple{Int,Int}},Float64}()
+        # Horizontal hopping
+        for j in 1:cols-1
+            for i in 1:rows
+                J[((i,j),(i,j+1))] = Jh
+            end
+        end
+        # Vertical hopping
+        for j in 1:cols
+            for i in 1:rows-1
+                J[((i,j),(i+1,j))] = Jv
+            end
+        end
+        return J
+    else
+        error("Dimension not implemented")
+    end
+end
+
+function random_δ(Lattice::AbstractArray{<:Int}, μ::Float64, var::Float64)
+    δ = Dict{Tuple{Int,Int},Float64}()
+    dimension = length(Lattice)
+    if dimension==2
+        for i in 1:Lattice[1]
+            for j in 1:Lattice[2]
+                # δ[((i,j),(i,j))] = randn()*sqrt(var) + μ
+                δ[(i,j)] = randn()*sqrt(var) + μ
+            end
+        end
+        return δ
+    else
+        error("Dimension not implemented")
+    end
+end
+
+"""
+Input: 
+    - Lattice: AbstractArray{<:AbstractFloat}
+    - N: Int
+    - l: Int Distance of the pairing operator
+"""
+function PairingOperator(Lattice::AbstractArray{<:Int}, N::Int, I::Int, J::Int, l::Int)
+    dimension = length(Lattice)
+    if dimension == 1
+        error("Dimension not implemented")
+    elseif dimension == 2
+        rows = Lattice[1]
+        cols = Lattice[2]
+        o = Op_fixed(2*rows*cols, N)
+        pairing = ada(o,Cartesian2Index([I,J],[rows,cols],1),Cartesian2Index([I,J+l],[rows,cols],1))*ada(o,Cartesian2Index([I+1,J],[rows,cols],2),Cartesian2Index([I+1,J+l],[rows,cols],2))
+        return pairing
+    else
+        error("Dimension not implemented")
+    end
 end
