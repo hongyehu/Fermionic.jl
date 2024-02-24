@@ -22,9 +22,10 @@ export rhosp_mixed, eigensp_mixed
 include("model.jl")
 export Cartesian2Index, SpinFullFermiHubbard,SpinFullFermiHubbardSubspace,SpinFullRandomState
 export SpinFullRandomStateSubspace,GHZSubspace,measure!
-export Hopping, random_δ, PairingOperator
+export Hopping, random_δ, random_θ
+export Dwave, global_spin_X_rot,local_spin_X_rot
 
 include("shadow.jl")
-export ShadowBasis_krylov, ShadowBasis
+export  ShadowBasis, ShadowBasis_Global_Xrot,ShadowBasis_Local_Xrot
 
 end # module

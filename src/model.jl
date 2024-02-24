@@ -20,6 +20,31 @@ function Cartesian2Index(C_coor::AbstractArray{<:Int64},Lattice::AbstractArray{<
     end
 end
 
+# Implement Dwave pairing 
+function Dwave(
+    Lattice::AbstractArray{<:Int64},
+    i::Int,
+    j::Int,
+    N::Int,
+)
+    dimension = length(Lattice)
+    if dimension == 1
+        pass
+    elseif dimension == 2
+        rows = Lattice[1]
+        cols = Lattice[2]
+        op_size = 2*rows*cols
+        o = Op_fixed(op_size,N); # fixed particle number subspace
+        dwave = ada(o,Cartesian2Index([1,i],[rows,cols],1),Cartesian2Index([1,j],[rows,cols],1))*ada(o,Cartesian2Index([2,i],[rows,cols],2),Cartesian2Index([2,j],[rows,cols],2))
+        dwave -= ada(o,Cartesian2Index([1,i],[rows,cols],1),Cartesian2Index([1,j],[rows,cols],2))*ada(o,Cartesian2Index([2,i],[rows,cols],2),Cartesian2Index([2,j],[rows,cols],1))
+        dwave -= ada(o,Cartesian2Index([1,i],[rows,cols],2),Cartesian2Index([1,j],[rows,cols],1))*ada(o,Cartesian2Index([2,i],[rows,cols],1),Cartesian2Index([2,j],[rows,cols],2))
+        dwave += ada(o,Cartesian2Index([1,i],[rows,cols],2),Cartesian2Index([1,j],[rows,cols],2))*ada(o,Cartesian2Index([2,i],[rows,cols],1),Cartesian2Index([2,j],[rows,cols],1))
+        return dwave
+    else
+        error("Dimension not implemented")
+    end
+end
+
 # Implement Spinfull Fermi-Hubbard model 
 """
 `FermiHubbard(Dimension::Int, t::Float64, U::Float64, δ::AbstractArray{<:AbstractFloat})`
@@ -334,22 +359,88 @@ function random_δ(Lattice::AbstractArray{<:Int}, μ::Float64, var::Float64)
     end
 end
 
-"""
-Input: 
-    - Lattice: AbstractArray{<:AbstractFloat}
-    - N: Int
-    - l: Int Distance of the pairing operator
-"""
-function PairingOperator(Lattice::AbstractArray{<:Int}, N::Int, I::Int, J::Int, l::Int)
+function random_θ(Lattice::AbstractArray{<:Int}, min::Float64, max::Float64)
+    δ = Dict{Tuple{Int,Int},Float64}()
+    dimension = length(Lattice)
+    if dimension==2
+        for i in 1:Lattice[1]
+            for j in 1:Lattice[2]
+                # δ[((i,j),(i,j))] = randn()*sqrt(var) + μ
+                δ[(i,j)] = randn()*(max-min) + min
+            end
+        end
+        return δ
+    else
+        error("Dimension not implemented")
+    end
+end
+
+# """
+# Input: 
+#     - Lattice: AbstractArray{<:AbstractFloat}
+#     - N: Int
+#     - l: Int Distance of the pairing operator
+# """
+# function PairingOperator(Lattice::AbstractArray{<:Int}, N::Int, I::Int, J::Int, l::Int)
+#     dimension = length(Lattice)
+#     if dimension == 1
+#         error("Dimension not implemented")
+#     elseif dimension == 2
+#         rows = Lattice[1]
+#         cols = Lattice[2]
+#         o = Op_fixed(2*rows*cols, N)
+#         pairing = ada(o,Cartesian2Index([I,J],[rows,cols],1),Cartesian2Index([I,J+l],[rows,cols],1))*ada(o,Cartesian2Index([I+1,J],[rows,cols],2),Cartesian2Index([I+1,J+l],[rows,cols],2))
+#         return pairing
+#     else
+#         error("Dimension not implemented")
+#     end
+# end
+function global_spin_X_rot(
+    Lattice::AbstractArray{<:Int},
+    N::Int,
+)
     dimension = length(Lattice)
     if dimension == 1
-        error("Dimension not implemented")
+        pass
     elseif dimension == 2
         rows = Lattice[1]
         cols = Lattice[2]
-        o = Op_fixed(2*rows*cols, N)
-        pairing = ada(o,Cartesian2Index([I,J],[rows,cols],1),Cartesian2Index([I,J+l],[rows,cols],1))*ada(o,Cartesian2Index([I+1,J],[rows,cols],2),Cartesian2Index([I+1,J+l],[rows,cols],2))
-        return pairing
+        op_size = 2*rows*cols
+        o = Op_fixed(op_size,N); # fixed particle number subspace
+        Ham = spzeros(Complex{Float64},binomial(2*rows*cols,N),binomial(2*rows*cols,N))
+        print("o dim: ", o.dim,"\n")
+        for i in 1:rows
+            for j in 1:cols
+                Ham += (ada(o,Cartesian2Index([i,j],[rows,cols],1),Cartesian2Index([i,j],[rows,cols],2))+ada(o,Cartesian2Index([i,j],[rows,cols],2),Cartesian2Index([i,j],[rows,cols],1)))
+            end
+        end
+        return Ham
+    else
+        error("Dimension not implemented")
+    end
+end
+
+function local_spin_X_rot(
+    Lattice::AbstractArray{<:Int},
+    N::Int,
+    θ::Dict{Tuple{Int,Int},Float64},
+)
+    dimension = length(Lattice)
+    if dimension == 1
+        pass
+    elseif dimension == 2
+        rows = Lattice[1]
+        cols = Lattice[2]
+        op_size = 2*rows*cols
+        o = Op_fixed(op_size,N); # fixed particle number subspace
+        Ham = spzeros(Complex{Float64},binomial(2*rows*cols,N),binomial(2*rows*cols,N))
+        print("o dim: ", o.dim,"\n")
+        for i in 1:rows
+            for j in 1:cols
+                Ham += θ[(i,j)]*(ada(o,Cartesian2Index([i,j],[rows,cols],1),Cartesian2Index([i,j],[rows,cols],2))+ada(o,Cartesian2Index([i,j],[rows,cols],2),Cartesian2Index([i,j],[rows,cols],1)))
+            end
+        end
+        return Ham
     else
         error("Dimension not implemented")
     end

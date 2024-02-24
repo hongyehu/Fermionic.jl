@@ -136,3 +136,83 @@ function ShadowBasis(
     end
     return basis
 end
+
+function ShadowBasis_Global_Xrot(
+    Lattice::AbstractArray{<:Int},
+    Jh::Float64,
+    Jv::Float64,
+    U::Float64,
+    t::Float64,
+    δ::Dict{Tuple{Int, Int}, Float64},
+    N::Int,
+    θ::Float64,
+    )
+    """
+    Row first ordering
+    """
+    dimension = length(Lattice)
+    if dimension == 1
+        error("Dimension not implemented")
+    elseif dimension == 2
+        rows = Lattice[1]
+        cols = Lattice[2]
+        subspace_dim = binomial(2*rows*cols,N)
+        # print("key: ", key,"\n")
+        Ham = SpinFullFermiHubbardSubspace([rows,cols],Hopping([rows,cols],Jh,Jv),U,δ,N)
+        ones_vector = ones(ComplexF64, binomial(2*rows*cols,N))
+        sparse_identity_matrix = spdiagm(0 => ones_vector)
+        results = [spzeros(ComplexF64,subspace_dim,subspace_dim) for _ = 1:subspace_dim]
+        sparse_identity_matrix = exp(Matrix(im*t/2*Ham))*sparse_identity_matrix
+        Urot = exp(Matrix(1im*θ*global_spin_X_rot([rows,cols],N)))
+        sparse_identity_matrix = Urot*sparse_identity_matrix
+        sparse_identity_matrix = exp(Matrix(im*t/2*Ham))*sparse_identity_matrix
+        for k in 1:subspace_dim
+            # print("k: ", k,"\n")
+            results[k] = sparse_identity_matrix[:,k]*sparse_identity_matrix[:,k]'
+        end
+        return results
+    else
+        error("Dimension not implemented")
+    end
+    return basis
+end
+
+function ShadowBasis_Local_Xrot(
+    Lattice::AbstractArray{<:Int},
+    Jh::Float64,
+    Jv::Float64,
+    U::Float64,
+    t::Float64,
+    δ::Dict{Tuple{Int, Int}, Float64},
+    N::Int,
+    θ::Dict{Tuple{Int, Int}, Float64}
+    )
+    """
+    Row first ordering
+    """
+    dimension = length(Lattice)
+    if dimension == 1
+        error("Dimension not implemented")
+    elseif dimension == 2
+        rows = Lattice[1]
+        cols = Lattice[2]
+        subspace_dim = binomial(2*rows*cols,N)
+        # print("key: ", key,"\n")
+        Ham = SpinFullFermiHubbardSubspace([rows,cols],Hopping([rows,cols],Jh,Jv),U,δ,N)
+        ones_vector = ones(ComplexF64, binomial(2*rows*cols,N))
+        sparse_identity_matrix = spdiagm(0 => ones_vector)
+        results = [spzeros(ComplexF64,subspace_dim,subspace_dim) for _ = 1:subspace_dim]
+        sparse_identity_matrix = exp(Matrix(im*t/2*Ham))*sparse_identity_matrix
+        Urot = exp(Matrix(1im*local_spin_X_rot([rows,cols],N,θ)))
+        sparse_identity_matrix = Urot*sparse_identity_matrix
+        sparse_identity_matrix = exp(Matrix(im*t/2*Ham))*sparse_identity_matrix
+        for k in 1:subspace_dim
+            # print("k: ", k,"\n")
+            results[k] = sparse_identity_matrix[:,k]*sparse_identity_matrix[:,k]'
+        end
+        return results
+    else
+        error("Dimension not implemented")
+    end
+    return basis
+end
