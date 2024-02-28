@@ -158,7 +158,8 @@ function ShadowBasis_Global_Xrot(
         cols = Lattice[2]
         subspace_dim = binomial(2*rows*cols,N)
         # print("key: ", key,"\n")
-        Ham = SpinFullFermiHubbardSubspace([rows,cols],Hopping([rows,cols],Jh,Jv),U,δ,N)
+        Ham = transformed_SpinFullFermiHubbardSubspace([rows,cols],Hopping([rows,cols],Jh,Jv),U,δ,N)
+        # Ham = SpinFullFermiHubbardSubspace([rows,cols],Hopping([rows,cols],Jh,Jv),U,δ,N)
         ones_vector = ones(ComplexF64, binomial(2*rows*cols,N))
         sparse_identity_matrix = spdiagm(0 => ones_vector)
         results = [spzeros(ComplexF64,subspace_dim,subspace_dim) for _ = 1:subspace_dim]
@@ -198,7 +199,8 @@ function ShadowBasis_Local_Xrot(
         cols = Lattice[2]
         subspace_dim = binomial(2*rows*cols,N)
         # print("key: ", key,"\n")
-        Ham = SpinFullFermiHubbardSubspace([rows,cols],Hopping([rows,cols],Jh,Jv),U,δ,N)
+        Ham = transformed_SpinFullFermiHubbardSubspace([rows,cols],Hopping([rows,cols],Jh,Jv),U,δ,N)
+        # Ham = SpinFullFermiHubbardSubspace([rows,cols],Hopping([rows,cols],Jh,Jv),U,δ,N)
         ones_vector = ones(ComplexF64, binomial(2*rows*cols,N))
         sparse_identity_matrix = spdiagm(0 => ones_vector)
         results = [spzeros(ComplexF64,subspace_dim,subspace_dim) for _ = 1:subspace_dim]

@@ -44,6 +44,34 @@ function Dwave(
         error("Dimension not implemented")
     end
 end
+function transformed_Dwave(
+    Lattice::AbstractArray{<:Int64},
+    i::Int,
+    j::Int,
+    N::Int,
+)
+    dimension = length(Lattice)
+    if dimension == 1
+        pass
+    elseif dimension == 2
+        rows = Lattice[1]
+        cols = Lattice[2]
+        op_size = 2*rows*cols
+        o = Op_fixed(op_size,N); # fixed particle number subspace
+        if i % 2 == 1 && j % 2 == 1 # both i and j are odd numbers
+            dwave = (ada(o,Cartesian2Index([2,i],[rows,cols],1),Cartesian2Index([1,i],[rows,cols],2))-ada(o,Cartesian2Index([1,i],[rows,cols],1),Cartesian2Index([2,i],[rows,cols],2)))*
+            (ada(o,Cartesian2Index([1,j],[rows,cols],2),Cartesian2Index([2,j],[rows,cols],1))-ada(o,Cartesian2Index([2,j],[rows,cols],2),Cartesian2Index([1,j],[rows,cols],1)))
+            return dwave
+        elseif i % 2 == 1 && j % 2 == 0
+            dwave = (ada(o,Cartesian2Index([2,i],[rows,cols],1),Cartesian2Index([1,i],[rows,cols],2))-ada(o,Cartesian2Index([1,i],[rows,cols],1),Cartesian2Index([2,i],[rows,cols],2)))*
+            (ada(o,Cartesian2Index([2,j],[rows,cols],2),Cartesian2Index([1,j],[rows,cols],1))-ada(o,Cartesian2Index([1,j],[rows,cols],2),Cartesian2Index([2,j],[rows,cols],1)))
+        else
+            error("Not implemented")
+        end
+    else
+        error("Dimension not implemented")
+    end 
+end
 
 # Implement Spinfull Fermi-Hubbard model 
 """
@@ -192,6 +220,78 @@ function SpinFullFermiHubbardSubspace(
     else
         error("Dimension not implemented")
     end
+end
+
+function transformed_SpinFullFermiHubbardSubspace(
+    Lattice::AbstractArray{<:Int64}, 
+    J::Dict{Tuple{Tuple{Int,Int},Tuple{Int,Int}},Float64}, 
+    U::Float64, 
+    δ::Dict{Tuple{Int,Int},Float64},
+    N::Int
+    )
+    dimension = length(Lattice)
+    if dimension == 1
+        pass
+    elseif dimension == 2
+        rows = Lattice[1]
+        cols = Lattice[2]
+        op_size = 2*rows*cols
+        o = Op_fixed(op_size,N); # fixed particle number subspace
+        # Repulsion
+        Ham = -U*sum([ada(o,i,i)*ada(o,i+1,i+1) for i in 1:2:2*rows*cols-1])
+        for i in 1:rows
+            for j in 1:cols
+                Ham += U*ada(o,Cartesian2Index([i,j],[rows,cols],1),Cartesian2Index([i,j],[rows,cols],1))
+            end
+        end
+        for i in 1:rows
+            for j in 1:cols
+                Ham += δ[(i,j)]*(
+                    ada(o,Cartesian2Index([i,j],[rows,cols],1),Cartesian2Index([i,j],[rows,cols],1))-
+                    ada(o,Cartesian2Index([i,j],[rows,cols],2),Cartesian2Index([i,j],[rows,cols],2))
+                )
+            end
+        end
+        # Kinetic term
+        for i in 1:rows-1
+            for j in 1:cols-1
+                # Horizontal
+                Ham += -J[((i,j),(i,j+1))]*(
+                    ada(o,Cartesian2Index([i,j],[rows,cols],1),Cartesian2Index([i,j+1],[rows,cols],1))+
+                    ada(o,Cartesian2Index([i,j+1],[rows,cols],1),Cartesian2Index([i,j],[rows,cols],1))+
+                    ada(o,Cartesian2Index([i,j],[rows,cols],2),Cartesian2Index([i,j+1],[rows,cols],2))+
+                    ada(o,Cartesian2Index([i,j+1],[rows,cols],2),Cartesian2Index([i,j],[rows,cols],2))
+                )
+                # Vertical
+                Ham += -J[((i,j),(i+1,j))]*(
+                    ada(o,Cartesian2Index([i,j],[rows,cols],1),Cartesian2Index([i+1,j],[rows,cols],1))+
+                    ada(o,Cartesian2Index([i+1,j],[rows,cols],1),Cartesian2Index([i,j],[rows,cols],1))+
+                    ada(o,Cartesian2Index([i,j],[rows,cols],2),Cartesian2Index([i+1,j],[rows,cols],2))+
+                    ada(o,Cartesian2Index([i+1,j],[rows,cols],2),Cartesian2Index([i,j],[rows,cols],2))
+                )
+            end
+        end
+        # Horizontal last line  
+        for i in 1:cols-1
+            Ham += -J[((rows,i),(rows,i+1))]*(
+                ada(o,Cartesian2Index([rows,i],[rows,cols],1),Cartesian2Index([rows,i+1],[rows,cols],1))+
+                ada(o,Cartesian2Index([rows,i+1],[rows,cols],1),Cartesian2Index([rows,i],[rows,cols],1))+
+                ada(o,Cartesian2Index([rows,i],[rows,cols],2),Cartesian2Index([rows,i+1],[rows,cols],2))+
+                ada(o,Cartesian2Index([rows,i+1],[rows,cols],2),Cartesian2Index([rows,i],[rows,cols],2))
+            )
+        end
+        # Vertical last line
+        for i in 1:rows-1
+            Ham += -J[((i,cols),(i+1,cols))]*(
+                ada(o,Cartesian2Index([i,cols],[rows,cols],1),Cartesian2Index([i+1,cols],[rows,cols],1))+
+                ada(o,Cartesian2Index([i+1,cols],[rows,cols],1),Cartesian2Index([i,cols],[rows,cols],1))+
+                ada(o,Cartesian2Index([i,cols],[rows,cols],2),Cartesian2Index([i+1,cols],[rows,cols],2))+
+                ada(o,Cartesian2Index([i+1,cols],[rows,cols],2),Cartesian2Index([i,cols],[rows,cols],2))
+            )
+        end
+        return Ham
+    end
+
 end
 
 
@@ -359,6 +459,38 @@ function random_δ(Lattice::AbstractArray{<:Int}, μ::Float64, var::Float64)
     end
 end
 
+function random_horizontal_δ(Lattice::AbstractArray{<:Int}, μ::Float64, var::Float64)
+    δ = Dict{Tuple{Int,Int},Float64}()
+    dimension = length(Lattice)
+    if dimension==2
+        for i in 1:Lattice[1]
+            tmp = randn()*sqrt(var) + μ
+            for j in 1:Lattice[2]
+                δ[(i,j)] = tmp
+            end
+        end
+        return δ
+    else
+        error("Dimension not implemented")
+    end
+end
+
+function random_vertical_δ(Lattice::AbstractArray{<:Int}, μ::Float64, var::Float64)
+    δ = Dict{Tuple{Int,Int},Float64}()
+    dimension = length(Lattice)
+    if dimension==2
+        for j in 1:Lattice[2]
+            tmp = randn()*sqrt(var) + μ
+            for i in 1:Lattice[1]
+                δ[(i,j)] = tmp
+            end
+        end
+        return δ
+    else
+        error("Dimension not implemented")
+    end
+end
+
 function random_θ(Lattice::AbstractArray{<:Int}, min::Float64, max::Float64)
     δ = Dict{Tuple{Int,Int},Float64}()
     dimension = length(Lattice)
@@ -445,3 +577,4 @@ function local_spin_X_rot(
         error("Dimension not implemented")
     end
 end
+
