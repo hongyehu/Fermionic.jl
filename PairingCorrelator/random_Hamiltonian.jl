@@ -45,7 +45,7 @@ plt.show()
 # test global X rotation
 rows = 2
 cols = 2
-particle_number = 1#rows*cols
+particle_number = 3#rows*cols
 num_of_Hamiltonians = 300
 shadow_map = zeros(ComplexF64, binomial(2*rows*cols,particle_number)^2,binomial(2*rows*cols,particle_number)^2)
 @showprogress for i in 1:num_of_Hamiltonians
@@ -76,6 +76,12 @@ else
     println("Not in the visible space :(")
 end
 
+particle_number = 7
+target_operator = transformed_Dwave([rows,cols],1,2,particle_number)
+Matrix(target_operator)
+sum(abs.(Matrix(target_operator)))
+plt.imshow(real(Matrix(target_operator)))
+plt.show()
 
 # test local X rotation
 rows = 2
