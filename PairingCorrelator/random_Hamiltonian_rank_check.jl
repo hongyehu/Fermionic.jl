@@ -45,7 +45,7 @@ plt.show()
 # test global X rotation
 rows = 2
 cols = 2
-particle_number = 3#rows*cols
+particle_number = 2#rows*cols
 num_of_Hamiltonians = 300
 shadow_map = zeros(ComplexF64, binomial(2*rows*cols,particle_number)^2,binomial(2*rows*cols,particle_number)^2)
 @showprogress for i in 1:num_of_Hamiltonians
@@ -53,7 +53,7 @@ shadow_map = zeros(ComplexF64, binomial(2*rows*cols,particle_number)^2,binomial(
     t = 1.0
     Jv = rand()*5.0+1
     Jh = 0.0#rand()*5.0+1
-    U = rand()*1.0+1
+    U = 5.0 #rand()*1.0+1
     θ = rand()*π/2
     tmp_basis = ShadowBasis_Global_Xrot([rows,cols],Jh,Jv,U,t,δ,particle_number,θ)
     @show size(tmp_basis[1])
@@ -65,6 +65,7 @@ end
 shadow_map = shadow_map/num_of_Hamiltonians
 eigen_res = eigen(shadow_map)
 minimum(eigen_res.values)
+
 # target_operator  = ada(Op_fixed(2*rows*cols, particle_number),Cartesian2Index([1,1],[rows,cols],1),Cartesian2Index([1,2],[rows,cols],1))
 target_operator = transformed_Dwave([rows,cols],1,2,particle_number)
 first_ind = findfirst(x -> x > 1e-4, eigen_res.values)
@@ -76,12 +77,16 @@ else
     println("Not in the visible space :(")
 end
 
-particle_number = 7
+particle_number = 4
 target_operator = transformed_Dwave([rows,cols],1,2,particle_number)
 Matrix(target_operator)
 sum(abs.(Matrix(target_operator)))
 plt.imshow(real(Matrix(target_operator)))
 plt.show()
+plt.plot(diag(adjoint(target_operator)*target_operator))
+plt.show()
+
+
 
 # test local X rotation
 rows = 2
