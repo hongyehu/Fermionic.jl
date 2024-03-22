@@ -227,6 +227,7 @@ function transformed_SpinFullFermiHubbardSubspace(
     J::Dict{Tuple{Tuple{Int,Int},Tuple{Int,Int}},Float64}, 
     U::Float64, 
     δ::Dict{Tuple{Int,Int},Float64},
+    zfield::Float64,
     N::Int
     )
     dimension = length(Lattice)
@@ -239,19 +240,29 @@ function transformed_SpinFullFermiHubbardSubspace(
         o = Op_fixed(op_size,N); # fixed particle number subspace
         # Repulsion
         Ham = -U*sum([ada(o,i,i)*ada(o,i+1,i+1) for i in 1:2:2*rows*cols-1])
+        #offset chemical potential
         for i in 1:rows
             for j in 1:cols
-                Ham += U*ada(o,Cartesian2Index([i,j],[rows,cols],1),Cartesian2Index([i,j],[rows,cols],1))
+                Ham += zfield*ada(o,Cartesian2Index([i,j],[rows,cols],1),Cartesian2Index([i,j],[rows,cols],1))
             end
         end
         for i in 1:rows
             for j in 1:cols
                 Ham += δ[(i,j)]*(
-                    ada(o,Cartesian2Index([i,j],[rows,cols],1),Cartesian2Index([i,j],[rows,cols],1))-
+                    ada(o,Cartesian2Index([i,j],[rows,cols],1),Cartesian2Index([i,j],[rows,cols],1))+
                     ada(o,Cartesian2Index([i,j],[rows,cols],2),Cartesian2Index([i,j],[rows,cols],2))
                 )
             end
         end
+        # # symmetric random potential 
+        # for i in 1:rows
+        #     for j in 1:cols
+        #         Ham += δ[(i,j)]*(
+        #             ada(o,Cartesian2Index([i,j],[rows,cols],1),Cartesian2Index([i,j],[rows,cols],1))+
+        #             ada(o,Cartesian2Index([i,j],[rows,cols],2),Cartesian2Index([i,j],[rows,cols],2))
+        #         )
+        #     end
+        # end
         # Kinetic term
         for i in 1:rows-1
             for j in 1:cols-1

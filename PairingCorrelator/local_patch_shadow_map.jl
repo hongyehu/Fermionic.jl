@@ -33,19 +33,22 @@ end
 shadow_map = shadow_map/num_of_Hamiltonians
 eigen_res = eigen(shadow_map)
 
+rows = 2
+cols = 1
 all_eigen_values = []
 for pn in 1:3
     particle_number = pn
-    num_of_Hamiltonians = 30
+    num_of_Hamiltonians = 50
     shadow_map = zeros(ComplexF64, binomial(2*rows*cols,particle_number)^2,binomial(2*rows*cols,particle_number)^2)
     @showprogress for i in 1:num_of_Hamiltonians
-        δ = random_δ([rows,cols],0.0,2.0)
+        δ = random_δ([rows,cols],0.0,10.0)
         t = 1.0
         Jv = rand()*10.0
         Jh = 0.0
         U = 10.0 #rand()*1.0+1
+        zfield = rand()*10
         θ = rand()*π/2
-        tmp_basis = ShadowBasis_Global_Xrot([rows,cols],Jh,Jv,U,t,δ,particle_number,θ)
+        tmp_basis = ShadowBasis_Global_Xrot([rows,cols],Jh,Jv,U,t,zfield,δ,particle_number,θ)
         @show size(tmp_basis[1])
         for j in 1:binomial(2*rows*cols,particle_number)
             flat_basis = reshape(tmp_basis[j],binomial(2*rows*cols,particle_number)^2)

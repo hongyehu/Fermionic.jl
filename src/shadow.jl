@@ -143,6 +143,7 @@ function ShadowBasis_Global_Xrot(
     Jv::Float64,
     U::Float64,
     t::Float64,
+    zfield::Float64,
     δ::Dict{Tuple{Int, Int}, Float64},
     N::Int,
     θ::Float64,
@@ -158,7 +159,7 @@ function ShadowBasis_Global_Xrot(
         cols = Lattice[2]
         subspace_dim = binomial(2*rows*cols,N)
         # print("key: ", key,"\n")
-        Ham = transformed_SpinFullFermiHubbardSubspace([rows,cols],Hopping([rows,cols],Jh,Jv),U,δ,N)
+        Ham = transformed_SpinFullFermiHubbardSubspace([rows,cols],Hopping([rows,cols],Jh,Jv),U,δ,zfield,N)
         # Ham = SpinFullFermiHubbardSubspace([rows,cols],Hopping([rows,cols],Jh,Jv),U,δ,N)
         ones_vector = ones(ComplexF64, binomial(2*rows*cols,N))
         sparse_identity_matrix = spdiagm(0 => ones_vector)
