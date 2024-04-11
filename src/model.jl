@@ -238,12 +238,13 @@ function transformed_SpinFullFermiHubbardSubspace(
         cols = Lattice[2]
         op_size = 2*rows*cols
         o = Op_fixed(op_size,N); # fixed particle number subspace
-        # Repulsion
+        # Attractions
         Ham = -U*sum([ada(o,i,i)*ada(o,i+1,i+1) for i in 1:2:2*rows*cols-1])
         #offset chemical potential
         for i in 1:rows
             for j in 1:cols
-                Ham += zfield*ada(o,Cartesian2Index([i,j],[rows,cols],1),Cartesian2Index([i,j],[rows,cols],1))
+                Ham += 0.5*zfield*ada(o,Cartesian2Index([i,j],[rows,cols],1),Cartesian2Index([i,j],[rows,cols],1))
+                Ham -= 0.5*zfield*ada(o,Cartesian2Index([i,j],[rows,cols],2),Cartesian2Index([i,j],[rows,cols],2))
             end
         end
         for i in 1:rows
