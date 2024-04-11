@@ -2,6 +2,7 @@ using LinearAlgebra
 using SparseArrays
 using Fermionic
 using Arpack
+using Optimization
 
 function Hopping(particle_sector::Int64)
     if particle_sector == 1
@@ -134,6 +135,22 @@ function target_op(particle_sector::Int64)
     return ada(o,3,2)-ada(o,1,4)
 end
 
-U = Uevolve(1.0,1.0,1.0,0.0,0.0,0.0,0.4,0.0,1)
+U = Uevolve(1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.4,1)
 U*target_op(1)*U'
 
+target_op(1)
+function rosenbrock(x, p)
+    return (p[1] - x[1])^2 + p[2] * (x[2] - x[1]^2)^2
+end
+x0 = [0.3,1.0]
+p = [3.0, 100.0]
+
+prob = OptimizationProblem(rosenbrock, x0, p)
+using OptimizationBBO
+using OptimizationOptimJL
+prob = OptimizationProblem(rosenbrock, x0, p, lb = [-1.0, -1.0], ub = [1.0, 2.0])
+sol = solve(prob, NOMAD())
+sol.minimum
+sol.u
+rosenbrock([1,1], p)
+sqrt(3)
