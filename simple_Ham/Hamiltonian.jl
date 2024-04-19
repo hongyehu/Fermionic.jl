@@ -104,6 +104,7 @@ function ShadowMap(
     sparse_identity_matrix = exp(Matrix(1im*t*Ham))*sparse_identity_matrix
     Urot = exp(Matrix(1im*θ*Xrot(particle_sector)))
     sparse_identity_matrix = Urot*sparse_identity_matrix
+    sparse_identity_matrix = exp(Matrix(1im*t*Ham))*sparse_identity_matrix
     for k in 1:subspace_dim
         results[k] = sparse_identity_matrix[:,k]*sparse_identity_matrix[:,k]'
     end
@@ -128,29 +129,29 @@ function Uevolve(
     Ham = -J*Hopping(particle_sector).-U*Int(particle_sector).+δ1up.*n(particle_sector,Site=1,Spin=1).+δ1down.*n(particle_sector,Site=1,Spin=2).+δ2up.*n(particle_sector,Site=2,Spin=1).+δ2down.*n(particle_sector,Site=2,Spin=2)
     U = exp(Matrix(-1im*t*Ham))
     Urot = exp(Matrix(-1im*θ*Xrot(particle_sector)))
-    return Urot*U
+    return U*Urot*U
 end
 function target_op(particle_sector::Int64)
     o = Op_fixed(2*2,particle_sector); 
     return ada(o,3,2)-ada(o,1,4)
 end
 
-U = Uevolve(1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.4,1)
-U*target_op(1)*U'
+# U = Uevolve(1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.4,1)
+# U*target_op(1)*U'
 
-target_op(1)
-function rosenbrock(x, p)
-    return (p[1] - x[1])^2 + p[2] * (x[2] - x[1]^2)^2
-end
-x0 = [0.3,1.0]
-p = [3.0, 100.0]
+# target_op(1)
+# function rosenbrock(x, p)
+#     return (p[1] - x[1])^2 + p[2] * (x[2] - x[1]^2)^2
+# end
+# x0 = [0.3,1.0]
+# p = [3.0, 100.0]
 
-prob = OptimizationProblem(rosenbrock, x0, p)
-using OptimizationBBO
-using OptimizationOptimJL
-prob = OptimizationProblem(rosenbrock, x0, p, lb = [-1.0, -1.0], ub = [1.0, 2.0])
-sol = solve(prob, NOMAD())
-sol.minimum
-sol.u
-rosenbrock([1,1], p)
-sqrt(3)
+# prob = OptimizationProblem(rosenbrock, x0, p)
+# using OptimizationBBO
+# using OptimizationOptimJL
+# prob = OptimizationProblem(rosenbrock, x0, p, lb = [-1.0, -1.0], ub = [1.0, 2.0])
+# sol = solve(prob, NOMAD())
+# sol.minimum
+# sol.u
+# rosenbrock([1,1], p)
+# sqrt(3)
