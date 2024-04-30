@@ -88,3 +88,8 @@ M, O = Diag_real_skew(test);
 round.(M,digits=2)
 
 Cartesian2Index([1,1],[2,2],2)
+
+test = createRowSwapMatrix(5,1,2)
+test*test
+tmp = [1,2,3,4,5]
+size(tmp)[1]

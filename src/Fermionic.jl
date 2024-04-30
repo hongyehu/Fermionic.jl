@@ -11,6 +11,7 @@ include("correlations.jl")
 include("logic_gates.jl")
 include("mixed.jl")
 
+
 export Op, dim, basis, a, ad, ada, aad, aa, adad, adf, af, vacuum
 export fixed, basis_m,  Op_fixed
 export State, st, ope, typ, rhosp, rhoqsp, non_zero
@@ -28,5 +29,8 @@ export transformed_Dwave, transformed_SpinFullFermiHubbardSubspace
 
 include("shadow.jl")
 export  ShadowBasis, ShadowBasis_Global_Xrot,ShadowBasis_Local_Xrot
+
+include("BCS.jl")
+export createRowSwapMatrix
 
 end # module
