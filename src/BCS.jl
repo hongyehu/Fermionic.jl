@@ -1,4 +1,3 @@
-
 function createRowSwapMatrix(n, i, j)
     # Create an n x n identity matrix
     E = Matrix{Float64}(I, n, n)
@@ -34,10 +33,18 @@ end
 
 function get_α_β(G,Is::Vector{Int64},N::Int64)
     # N is the number of spinless fermion
-    new_G,cs = shuffle_G(G,Is,N)
+    # new_G,cs = shuffle_G(G,Is,N)
+    new_G = G
     region_size = size(Is)[1]
-    c = new_G[1:region_size,region_size+1:end]*inv(Matrix{Float64}(I, N-region_size, N-region_size)-new_G[region_size+1:end,region_size+1:end])
-    α = (new_G[1:region_size,1:region_size]+c*new_G[region_size+1:end,region_size+1:end]*transpose(c)).*0.5
+    c = new_G[1:region_size,region_size+1:end]*inv(Matrix{Float64}(I, N-region_size, N-region_size)-real(new_G[region_size+1:end,region_size+1:end]))
+    # print("debug: ","\n")
+    # display(Matrix{Float64}(I, N-region_size, N-region_size)-new_G[region_size+1:end,region_size+1:end])
+    # print("a11: ",  "\n")
+    # display(round.(new_G[1:region_size,1:region_size],digits=4))
+    # print("a12: ", "\n")
+    # display(round.(new_G[1:region_size,region_size+1:end],digits=4))
+    # α = (new_G[1:region_size,1:region_size]+c*new_G[region_size+1:end,region_size+1:end]*transpose(c)).*0.5
+    α = (new_G[1:region_size,1:region_size]-c*new_G[region_size+1:end,region_size+1:end]*transpose(c)).*0.5
     β = c*transpose(c)
     return α, β
 end
@@ -75,7 +82,7 @@ function get_full_RDM(α::Matrix{ComplexF64},β::Matrix{ComplexF64},Nsub::Int)
         end
     end
     unnorm_RDM = exp(Matrix(term1))*exp(Matrix(term2))*exp(Matrix(term3));
-    return unnorm_RDM, term1, term2, term3
+    return unnorm_RDM./real(tr(unnorm_RDM))
 end
 
 function BCS_G(L::Int64, type::Symbol;μ::Float64=0.5,Δ::Float64=5.0)
@@ -87,13 +94,15 @@ function BCS_G(L::Int64, type::Symbol;μ::Float64=0.5,Δ::Float64=5.0)
                     x_coor = Cartesian2Index([i,j],[L,L],1)
                     y_coor = Cartesian2Index([ip,jp],[L,L],2)
                     Gtmp = 0.0+0.0im
-                    for kx in 1:L
-                        for ky in 1:L
+                    for kx in Int(-(L-1)/2):1:Int((L-1)/2)#1:L
+                        for ky in Int(-(L-1)/2):1:Int((L-1)/2)
                             # print("kx: ", kx, " ky: ", ky, " acoef: ", a_coef(2π*kx/L,2π*ky/L,type;μ=μ,Δ=Δ) ,"\n")
                             Gtmp += (2.0/L^2)*a_coef(2π*kx/L,2π*ky/L,type;μ=μ,Δ=Δ)*exp(1im*(2π*kx/L*(i-ip)+2π*ky/L*(j-jp)))
                         end
                     end
                     G[x_coor,y_coor] = Gtmp
+                    # See Minh's code
+                    G[y_coor,x_coor] = -Gtmp
                 end
             end
         end
@@ -120,25 +129,53 @@ function a_coef(kx::Float64,ky::Float64, type::Symbol;μ::Float64=0.5,Δ::Float6
         return Δfun(kx,ky,type;Δ=Δ)/(sqrt(Δfun(kx,ky,type;Δ=Δ)^2+ξfun(kx,ky;μ=μ)^2)+ξfun(kx,ky;μ=μ))
     end
 end
+function RDM(G::Matrix{ComplexF64},sites::Matrix{Int64})
+    # L is the lattice size of the two dimensional lattice (spinfull-fermions)
+    # sites is the coordinates of the sites that we want to keep[[x1,y1],[x2,y2],...]
+    L = Int64(sqrt(size(G)[1]/2))
+    Is = Vector{Int64}()
+    for i in 1:size(sites)[1]
+        push!(Is,Cartesian2Index([sites[i,1],sites[i,2]],[L,L],1))
+        push!(Is,Cartesian2Index([sites[i,1],sites[i,2]],[L,L],2))
+    end
+    Gtmp,cs = shuffle_G(G,Is,2*L^2);
+    α, β = get_α_β(Gtmp,Is,2*L^2);
+    print("α: ",round.(α,digits=4),"\n")
+    print("β: ",round.(β,digits=4),"\n")
+    ρ = get_full_RDM(α,β,size(Is)[1]);
+    return ρ
+end
 
-using PythonCall
-plt = pyimport("matplotlib.pyplot")
-L = 4
-Gtmp = BCS_G(L,:s);
-Gtmp,_ = shuffle_G(Gtmp,[1,2,3,4,19,20,27,28],2*L^2);
-sα, sβ = get_α_β(Gtmp,[1,2,3,4,19,20,27,28],2*L^2);
-Gtmp = BCS_G(L,:d);
-Gtmp,_ = shuffle_G(Gtmp,[1,2,3,4,19,20,27,28],2*L^2);
-dα, dβ = get_α_β(Gtmp,[1,2,3,4,19,20,27,28],2*L^2);
+function RDM(G::Matrix{ComplexF64},Is::Vector{Int64})
+    # L is the lattice size of the two dimensional lattice (spinfull-fermions)
+    # sites is the coordinates of the sites that we want to keep[[x1,y1],[x2,y2],...]
+    L = Int64(sqrt(size(G)[1]/2))
+    Gtmp,cs = shuffle_G(G,Is,2*L^2);
+
+    α, β = get_α_β(Gtmp,Is,2*L^2);
+    print("α: ","\n")
+    display(round.(α,digits=4))
+    print("β: ","\n")
+    display(round.(β,digits=4),)
+    ρ = get_full_RDM(α,β,size(Is)[1]);
+    return ρ
+end
+
+# test = [1 2; 3 4; 5 6]
+# test[1,:]
+# L = 4
+# Gtmp = BCS_G(L,:s);
+# Gtmp
+# Gtmp,_ = shuffle_G(Gtmp,[1,2,3,4,19,20,27,28],2*L^2);
+# sα, sβ = get_α_β(Gtmp,[1,2,3,4,19,20,27,28],2*L^2);
+# Gtmp = BCS_G(L,:d);
+# Gtmp,_ = shuffle_G(Gtmp,[1,2,3,4,19,20,27,28],2*L^2);
+# dα, dβ = get_α_β(Gtmp,[1,2,3,4,19,20,27,28],2*L^2);
 
 
-ρs, term1s, term2s, term3s = get_full_RDM(sα,sβ,8);
-ρd, term1d, term2d, term3d = get_full_RDM(dα,dβ,8);
+# ρs= get_full_RDM(sα,sβ,8);
+# ρd= get_full_RDM(dα,dβ,8);
+
+# ρd
 
 
-
-plt.imshow(real(ρd))
-plt.show()
-
-plt.imshow(real(get_full_RDM(α,β,8)))
-plt.show()

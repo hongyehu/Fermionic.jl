@@ -1,95 +1,178 @@
 using Fermionic
-function Diag_real_skew(M, rand_perturbation::Int64=0)
-    N = div(size(M, 1), 2)
-  
-    # Random perturbation before forcing skew symmetrisation
-    if (rand_perturbation != 0)
-      if (rand_perturbation == 1)
-          random_M = rand(2N, 2N) * eps()
-          random_M = (random_M - random_M') / 2.0
-          M += random_M
-        end
-        if (rand_perturbation == 4)
-          random_M = zeros(Complex{Float64}, 2N, 2N)
-          random_M[1, N+2] = eps()
-          random_M[2, N+1] = -random_M[1, N+2]
-          random_M = (random_M - random_M') / 2.0
-          M += random_M
-        end
-        if (rand_perturbation == 5)
-          random_M = zeros(Complex{Float64}, 2N, 2N)
-          r = eps()
-          M[1, 2] += r
-          M[2, 1] -= r
-        end
-    end
-  
-    Schur_object = LinearAlgebra.schur(M)
-  
-    Schur_ort_i = Schur_object.vectors
-    Schur_blocks_i = Schur_object.Schur
-  
-    # Reorder so that all 2x2 blocks have positive value in top right, accounting for 1x1 blocks.
-    swap_perm = Vector{Int64}(undef, 0)
-    sizehint!(swap_perm, 2N)
-    iiter = 1
-    while iiter < 2N
-        if abs(Schur_blocks_i[iiter, iiter]) >= abs(Schur_blocks_i[iiter+1, iiter]) # alternative: s_b_i[i+1, i] == 0
-            # We have a 1x1 block - move it to the front. These always come in pairs, but not always sequentially.
-            pushfirst!(swap_perm, iiter)
-            iiter += 1
-        elseif (Schur_blocks_i[iiter + 1, iiter] >= 0.0)
-            # Flipped 2x2 block
-            push!(swap_perm, iiter + 1, iiter)
-            iiter += 2
-        else
-            # Unflipped 2x2 block
-            push!(swap_perm, iiter, iiter + 1)
-            iiter += 2
-        end
-    end
-    if iiter == 2N  # catch the final 1x1 block if it exists
-      pushfirst!(swap_perm, 2N)
-    end
-    
-    M_temp = Schur_blocks_i[swap_perm, swap_perm]
-    O_temp = Schur_ort_i[:, swap_perm]
-  
-    # Sort the blocks, λ_1>=λ_2>=...>=λ_N with λ_1 the coefficient in the upper left block
-    psort = sortperm(diag(M_temp, 1)[begin:2:end], rev=true)
-    full_psort = zeros(Int64, 2N)
-    full_psort[begin:2:end] .= 2 .* psort .- 1
-    full_psort[begin + 1:2:end] .= 2 .* psort
-  
-    M_f = M_temp[full_psort, full_psort]
-    O_f = real(O_temp[:, full_psort])
-  
-    return M_f, O_f
-  end
+using PythonCall
+using LinearAlgebra
+plt = pyimport("matplotlib.pyplot")
 
-using Random
-
-function random_antisymmetric_matrix(n::Int64)
-    # Initialize a n x n matrix with zeros
-    A = zeros(Float64, n, n)
-    
-    # Fill the upper triangular part above the diagonal with random values
-    for i in 1:n
-        for j in (i+1):n
-            A[i, j] = randn()  # Generate a random number from a normal distribution
-            A[j, i] = -A[i, j]  # Set the symmetric element to the negative
-        end
+L = 11
+G = BCS_G(L, :s)
+ρs = RDM(G, [1 1; 1 2; 3 1]);
+G
+function get_correlator_matrix(L::Int64,type::Symbol)
+    if type == :s
+        G = getBCSaij(L, :s);
+    elseif type == :d
+        G = getBCSaij(L, :d);
+    else
+        error("type not implemented")
     end
-    
-    return A
+    i_site = Cartesian2Index([Int((L+1)/2),Int((L+1)/2)],[L,L],1);
+    k_site = Cartesian2Index([Int((L+1)/2),Int((L+1)/2+1)],[L,L],1);
+    l_site = Cartesian2Index([Int((L+1)/2),Int((L+1)/2)],[L,L],2);#i_site<l_site<k_site
+    res = Matrix{ComplexF64}(undef, L, L);
+    for jx in 1:L
+      for jy in 1:L
+        if jy<(L+1)/2
+			#j_site<i_site<l_site<k_site
+        	j_site = Cartesian2Index([jx,jy],[L,L],2);
+			Is = [j_site,i_site,l_site,k_site];
+			ρs = RDM(G, Is);
+			o = Op(4);
+			obs = ad(o,2)*ad(o,1)*a(o,4)*a(o,3);
+			res[jx,jy] = tr(ρs*obs);
+        elseif jy>(L+1)/2
+			#i_site<l_site<k_site<j_site
+        	j_site = Cartesian2Index([jx,jy],[L,L],2);
+			Is = [i_site,l_site,k_site,j_site];
+			ρs = RDM(G, Is);
+			o = Op(4);
+			obs = ad(o,1)*ad(o,4)*a(o,3)*a(o,2);
+			res[jx,jy] = tr(ρs*obs);
+		elseif jy==(L+1)/2&&jx<(L+1)/2
+			#j_site<i_site<l_site<k_site
+        	j_site = Cartesian2Index([jx,jy],[L,L],2);
+			Is = [j_site,i_site,l_site,k_site];
+			ρs = RDM(G, Is);
+			o = Op(4);
+			obs = ad(o,2)*ad(o,1)*a(o,4)*a(o,3);
+			res[jx,jy] = tr(ρs*obs);
+		elseif jy==(L+1)/2&&jx>(L+1)/2
+			#i_site<l_site<k_site<j_site
+        	j_site = Cartesian2Index([jx,jy],[L,L],2);
+			Is = [i_site,l_site,k_site,j_site];
+			ρs = RDM(G, Is);
+			o = Op(4);
+			obs = ad(o,1)*ad(o,4)*a(o,3)*a(o,2);
+			res[jx,jy] = tr(ρs*obs);
+		elseif jy==(L+1)/2&&jx==(L+1)/2
+			#i_site<l_site==j_site<k_site
+			j_site = Cartesian2Index([jx,jy],[L,L],2);
+			Is = [i_site,l_site,k_site];
+			ρs = RDM(G, Is);
+			o = Op(3);
+			obs = ad(o,1)*ad(o,2)*a(o,3)*a(o,2);
+			res[jx,jy] = tr(ρs*obs);
+        end
+      end
+    end
+    return res
 end
-test = random_antisymmetric_matrix(200)
-M, O = Diag_real_skew(test);
-round.(M,digits=2)
 
-Cartesian2Index([1,1],[2,2],2)
+tests = get_correlator_matrix(11,:s);
+testd = get_correlator_matrix(11,:d);
+begin
+	vmin = -0.045
+	vmax = 0.03
+	fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+	img1 = axs[0].imshow(real(tests),cmap="Oranges_r")
+	axs[0].set_title("s-wave")
+	img2 = axs[1].imshow(real(testd),cmap="Oranges_r")
+	axs[1].set_title("d-wave")
+	img1.set_clim(vmin, vmax)
+	img2.set_clim(vmin, vmax)
 
-test = createRowSwapMatrix(5,1,2)
-test*test
-tmp = [1,2,3,4,5]
-size(tmp)[1]
+	# Show color bar
+	fig.colorbar(img1, ax=axs[0])
+	fig.colorbar(img2, ax=axs[1])
+	plt.show()
+end
+
+function index2coordinates(L, i)
+    s = (i + 1) % 2
+    x = ((i - s + 1) ÷ 2) % L
+    x = x == 0 ? L : x
+    y = ((i - s + 1) ÷ 2 - x) ÷ L + 1
+    return x, y, s
+end
+function getak(kx, ky,type::Symbol)
+    Delta = 5.0
+    t = 1.0
+    mu = 0.5
+    Ek = -2 * t * (cos(kx) + cos(ky)) - mu
+    Deltak = if type == :d
+                Delta * (cos(kx) - cos(ky))
+            else
+                Delta
+            end
+    if Deltak == 0
+        ak = 0
+    else
+        ak = Deltak / (Ek + sqrt(Ek^2 + Deltak^2))
+    end
+    return ak
+end
+function getBCSaij(L::Int64,type::Symbol)
+    # return the matrix a_ij in Eq. (3) of https://journals.aps.org/prb/pdf/10.1103/PhysRevB.38.931
+    N = 2 * L^2
+    ## ak in momentum space
+    kxlist = 2 * π / L * collect(-(L-1)/2:1:(L-1)/2)
+    kylist = kxlist
+    ak = zeros(Complex{Float64}, L, L)
+    for i = 1:L
+        for j = 1:L
+            kx = kxlist[i]
+            ky = kylist[j]
+            ak[i, j] = getak(kx, ky, type)
+        end
+    end
+    ## convert to real space
+    aij = zeros(Complex{Float64}, N, N)
+    for i = 1:N
+        for j = 1:N
+            if i == j
+                aij[i, j] = 0
+            else
+                xi, yi, si = index2coordinates(L, i)
+                xj, yj, sj = index2coordinates(L, j)
+                if si == 0 && sj == 1
+                    rx = xi - xj
+                    ry = yi - yj
+    
+                    a = 0
+                    for kx in kxlist
+                        for ky in kylist
+                            a += getak(kx, ky, type) * exp(1im * (kx * rx + ky * ry)) / L^2
+                        end
+                    end
+    
+                    aij[i, j] = a / 2
+                    aij[j, i] = -a / 2
+                end
+            end
+        end
+    end
+
+    return aij
+end
+
+ξfun(0.3, 0.1)
+5.0*(cos(0.3)-cos(0.1))
+getak(2*π/11*-5, 2*π/11*3, :d)
+a_coef(2*π/11*0, 2*π/11*8, :d)
+rho1 = getBCSaij(3,:s)
+rho2 = BCS_G(3, :s)
+begin
+	fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+	axs[0].imshow(real(rho1))
+	axs[0].set_title("Minh")
+	axs[1].imshow(real(rho2))
+	axs[1].set_title("HYH")
+	plt.show()
+end
+real(rho1)[1:10,1:10]
+real(rho2)[1:10,1:10]
+
+
+tmp = 2 * π / L * collect(-(L-1)/2:1:(L-1)/2)
+tmp
+Cartesian2Index([1,2],[2,2],1)
+collect(-(L-1)/2:1:(L-1)/2)
