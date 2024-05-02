@@ -97,12 +97,12 @@ function BCS_G(L::Int64, type::Symbol;μ::Float64=0.5,Δ::Float64=5.0)
                     for kx in Int(-(L-1)/2):1:Int((L-1)/2)#1:L
                         for ky in Int(-(L-1)/2):1:Int((L-1)/2)
                             # print("kx: ", kx, " ky: ", ky, " acoef: ", a_coef(2π*kx/L,2π*ky/L,type;μ=μ,Δ=Δ) ,"\n")
-                            Gtmp += (2.0/L^2)*a_coef(2π*kx/L,2π*ky/L,type;μ=μ,Δ=Δ)*exp(1im*(2π*kx/L*(i-ip)+2π*ky/L*(j-jp)))
+                            Gtmp += a_coef(2π*kx/L,2π*ky/L,type;μ=μ,Δ=Δ)*exp(1im*(2π*kx/L*(i-ip)+2π*ky/L*(j-jp)))/(L^2)
                         end
                     end
-                    G[x_coor,y_coor] = Gtmp
+                    G[x_coor,y_coor] = Gtmp/2.0
                     # See Minh's code
-                    G[y_coor,x_coor] = -Gtmp
+                    G[y_coor,x_coor] = -Gtmp/2.0
                 end
             end
         end
@@ -114,7 +114,8 @@ function getBCSaij(L::Int64, type::Symbol;μ::Float64=0.5,Δ::Float64=5.0)
     # transformed from Minh's code, huge thanks to Minh!
     N = 2 * L^2
     ## ak in momentum space
-    kxlist = 2 * π / L * collect(-(L-1)/2:1:(L-1)/2)
+    # kxlist = 2 * π / L * collect(-(L-1)/2:1:(L-1)/2)
+    kxlist = 2 * π / L * collect(1:L)
     kylist = kxlist
     ak = zeros(Complex{Float64}, L, L)
     for i = 1:L
@@ -229,21 +230,6 @@ function RDM(G::Matrix{ComplexF64},Is::Vector{Int64})
     return ρ
 end
 
-# test = [1 2; 3 4; 5 6]
-# test[1,:]
-# L = 4
-# Gtmp = BCS_G(L,:s);
-# Gtmp
-# Gtmp,_ = shuffle_G(Gtmp,[1,2,3,4,19,20,27,28],2*L^2);
-# sα, sβ = get_α_β(Gtmp,[1,2,3,4,19,20,27,28],2*L^2);
-# Gtmp = BCS_G(L,:d);
-# Gtmp,_ = shuffle_G(Gtmp,[1,2,3,4,19,20,27,28],2*L^2);
-# dα, dβ = get_α_β(Gtmp,[1,2,3,4,19,20,27,28],2*L^2);
 
-
-# ρs= get_full_RDM(sα,sβ,8);
-# ρd= get_full_RDM(dα,dβ,8);
-
-# ρd
 
 
