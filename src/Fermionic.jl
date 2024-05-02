@@ -31,6 +31,6 @@ include("shadow.jl")
 export  ShadowBasis, ShadowBasis_Global_Xrot,ShadowBasis_Local_Xrot
 
 include("BCS.jl")
-export RDM, BCS_G, a_coef, Δfun, ξfun, shuffle_G
+export RDM, BCS_G, a_coef, Δfun, ξfun, shuffle_G,getBCSaij
 
 end # module
