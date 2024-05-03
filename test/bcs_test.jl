@@ -3,7 +3,7 @@ using PythonCall
 using LinearAlgebra
 plt = pyimport("matplotlib.pyplot")
 
-
+BCS_G(21, :s)
 function get_correlator_matrix(L::Int64,type::Symbol)
     if type == :s
         G = BCS_G(L, :s);
@@ -66,8 +66,8 @@ end
 
 
 
-tests = get_correlator_matrix(11,:s);
-testd = get_correlator_matrix(11,:d);
+tests = get_correlator_matrix(17,:s);
+testd = get_correlator_matrix(17,:d);
 begin
 	vmin = -0.045
 	vmax = 0.03

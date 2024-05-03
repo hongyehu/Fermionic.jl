@@ -222,10 +222,10 @@ function RDM(G::Matrix{ComplexF64},Is::Vector{Int64})
     Gtmp,cs = shuffle_G(G,Is,2*L^2);
 
     α, β = get_α_β(Gtmp,Is,2*L^2);
-    print("α: ","\n")
-    display(round.(α,digits=4))
-    print("β: ","\n")
-    display(round.(β,digits=4),)
+    # print("α: ","\n")
+    # display(round.(α,digits=4))
+    # print("β: ","\n")
+    # display(round.(β,digits=4),)
     ρ = get_full_RDM(α,β,size(Is)[1]);
     return ρ
 end
