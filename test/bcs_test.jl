@@ -86,3 +86,8 @@ begin
 	fig.colorbar(img2, ax=axs[1])
 	plt.show()
 end
+
+
+o = Op(4);
+plt.imshow(Matrix(ad(o,2)*ad(o,1)*a(o,4)*a(o,3)))
+plt.show()
