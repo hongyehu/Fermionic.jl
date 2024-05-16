@@ -3,12 +3,11 @@ using PythonCall
 using LinearAlgebra
 plt = pyimport("matplotlib.pyplot")
 
-BCS_G(21, :s)
-function get_correlator_matrix(L::Int64,type::Symbol)
+function get_correlator_matrix(L::Int64,type::Symbol;μ::Float64=0.5,Δ::Float64=5.0)
     if type == :s
-        G = BCS_G(L, :s);
+        G = BCS_G(L, :s;μ=μ,Δ=Δ);
     elseif type == :d
-        G = BCS_G(L, :d);
+        G = BCS_G(L, :d,μ=μ,Δ=Δ);
     else
         error("type not implemented")
     end
@@ -66,8 +65,8 @@ end
 
 
 
-tests = get_correlator_matrix(17,:s);
-testd = get_correlator_matrix(17,:d);
+tests = get_correlator_matrix(17,:s,μ=4.5,Δ=10.0);
+testd = get_correlator_matrix(17,:d,μ=4.5,Δ=10.0);
 begin
 	vmin = -0.045
 	vmax = 0.03
