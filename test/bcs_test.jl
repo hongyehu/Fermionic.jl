@@ -65,8 +65,8 @@ end
 
 
 
-tests = get_correlator_matrix(17,:s,μ=4.5,Δ=10.0);
-testd = get_correlator_matrix(17,:d,μ=4.5,Δ=10.0);
+tests = get_correlator_matrix(13,:s,μ=0.5,Δ=5.0);
+testd = get_correlator_matrix(13,:d,μ=0.5,Δ=5.0);
 begin
 	vmin = -0.045
 	vmax = 0.03
@@ -85,7 +85,7 @@ begin
 	fig.colorbar(img2, ax=axs[1])
 	plt.show()
 end
-
+testd
 
 o = Op(4);
 plt.imshow(Matrix(ad(o,2)*ad(o,1)*a(o,4)*a(o,3)))

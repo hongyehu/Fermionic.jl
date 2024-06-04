@@ -39,10 +39,10 @@ function get_α_β(G,Is::Vector{Int64},N::Int64)
     c = new_G[1:region_size,region_size+1:end]*inv(Matrix{Float64}(I, N-region_size, N-region_size)-real(new_G[region_size+1:end,region_size+1:end]))
     # print("debug: ","\n")
     # display(Matrix{Float64}(I, N-region_size, N-region_size)-new_G[region_size+1:end,region_size+1:end])
-    # print("a11: ",  "\n")
-    # display(round.(new_G[1:region_size,1:region_size],digits=4))
-    # print("a12: ", "\n")
-    # display(round.(new_G[1:region_size,region_size+1:end],digits=4))
+    print("a11: ",  "\n")
+    display(round.(new_G[1:region_size,1:region_size],digits=4))
+    print("a12: ", "\n")
+    display(round.(new_G[1:region_size,region_size+1:end],digits=4))
     # α = (new_G[1:region_size,1:region_size]+c*new_G[region_size+1:end,region_size+1:end]*transpose(c)).*0.5
     α = (new_G[1:region_size,1:region_size]-c*new_G[region_size+1:end,region_size+1:end]*transpose(c)).*0.5
     β = c*transpose(c)
@@ -72,16 +72,13 @@ function get_full_RDM(α::Matrix{ComplexF64},β::Matrix{ComplexF64},Nsub::Int)
     term3 = zeros(ComplexF64,2^Nsub,2^Nsub);
     for i in 1:size(α)[1]
         for j in 1:size(α)[2]
-            # print("i: ",i, " j: ", j , " debug: ",α[i,j]*ad(o,i)*ad(o,j))
             term1 += α[i,j]*ad(o,i)*ad(o,j)
             term2 += logβ[i,j]*ada(o,i,j)
-            # if β[i,j]!= 0.0
-            #     term2 += log(β[i,j])*ada(o,i,j)
-            # end
             term3 -= α[i,j]*a(o,i)*a(o,j)
         end
     end
     unnorm_RDM = exp(Matrix(term1))*exp(Matrix(term2))*exp(Matrix(term3));
+    unnorm_RDM = 0.5.*(unnorm_RDM+transpose(unnorm_RDM));
     return unnorm_RDM./real(tr(unnorm_RDM))
 end
 
@@ -209,8 +206,8 @@ function RDM(G::Matrix{ComplexF64},sites::Matrix{Int64})
     end
     Gtmp,cs = shuffle_G(G,Is,2*L^2);
     α, β = get_α_β(Gtmp,Is,2*L^2);
-    print("α: ",round.(α,digits=4),"\n")
-    print("β: ",round.(β,digits=4),"\n")
+    # print("α: ",round.(α,digits=4),"\n")
+    # print("β: ",round.(β,digits=4),"\n")
     ρ = get_full_RDM(α,β,size(Is)[1]);
     return ρ
 end
@@ -230,6 +227,8 @@ function RDM(G::Matrix{ComplexF64},Is::Vector{Int64})
     return ρ
 end
 
-
-
-
+# G = getBCSaij(3, :d;μ=0.5,Δ=5.0);
+# RDM(G,[1,2,5,6])
+# for i in diag(RDM(G,[1,2,5,6]))
+#     println(i)
+# end

@@ -131,6 +131,18 @@ function Uevolve(
     Urot = exp(Matrix(-1im*θ*Xrot(particle_sector)))
     return U*Urot*U
 end
+function Uevolve_uniform(
+    J::Float64,
+    U::Float64,
+    t::Float64,
+    θ::Float64,
+    particle_sector::Int64,
+    )
+    Ham = -J*Hopping(particle_sector).-U*Int(particle_sector)
+    U = exp(Matrix(-1im*t*Ham))
+    Urot = exp(Matrix(-1im*θ*Xrot(particle_sector)))
+    return U*Urot*U
+end
 function target_op(particle_sector::Int64)
     o = Op_fixed(2*2,particle_sector); 
     return ada(o,3,2)-ada(o,1,4)

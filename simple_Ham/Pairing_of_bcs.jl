@@ -3,7 +3,7 @@ using PythonCall
 using LinearAlgebra
 plt = pyimport("matplotlib.pyplot")
 
-function singlet_pairing_scaling(L::Int64, type::Symbol; μ::Float64=0.5,Δ::Float64=5.0)
+function singlet_pairing_scaling(L::Int64, type::Symbol; μ::Float64=0.5,Δ::Float64=5.0,connect=true)
     if type == :s
         G = BCS_G(L, :s;μ=μ,Δ=Δ);
     elseif type == :d
@@ -15,8 +15,52 @@ function singlet_pairing_scaling(L::Int64, type::Symbol; μ::Float64=0.5,Δ::Flo
     o = Op(8);
     Δcre = ad(o,1)*ad(o,4)-ad(o,2)*ad(o,3);
     Δana = a(o,8)*a(o,5)-a(o,7)*a(o,6);
-    # obs = Δcre*Δana+(Δcre*Δana)';
-    obs = Δcre*Δana+Δcre'*Δana';
+    if connect==true
+        obs = Δcre*Δana+Δcre'*Δana';
+        for i in 1:L-1
+            Is = [Cartesian2Index([1,1],[L,L],1),
+                Cartesian2Index([1,1],[L,L],2),
+                Cartesian2Index([2,1],[L,L],1),
+                Cartesian2Index([2,1],[L,L],2),
+                Cartesian2Index([1,1+i],[L,L],1),
+                Cartesian2Index([1,1+i],[L,L],2),
+                Cartesian2Index([2,1+i],[L,L],1),
+                Cartesian2Index([2,1+i],[L,L],2)];
+            ρs = RDM(G, Is);
+            res[i] = tr(ρs*obs)-tr(ρs*Δcre)*tr(ρs*Δana)-tr(ρs*Δcre')*tr(ρs*Δana');
+        end
+    else
+        # obs = Δcre*Δana+(Δcre*Δana)';
+        obs = Δcre*Δana+Δcre'*Δana';
+        for i in 1:L-1
+            Is = [Cartesian2Index([1,1],[L,L],1),
+                Cartesian2Index([1,1],[L,L],2),
+                Cartesian2Index([2,1],[L,L],1),
+                Cartesian2Index([2,1],[L,L],2),
+                Cartesian2Index([1,1+i],[L,L],1),
+                Cartesian2Index([1,1+i],[L,L],2),
+                Cartesian2Index([2,1+i],[L,L],1),
+                Cartesian2Index([2,1+i],[L,L],2)];
+            ρs = RDM(G, Is);
+            res[i] = tr(ρs*obs);
+        end
+    end
+    return res
+end
+
+function creation_mean_scaling(L::Int64, type::Symbol; μ::Float64=0.5,Δ::Float64=5.0)
+    if type == :s
+        G = BCS_G(L, :s;μ=μ,Δ=Δ);
+    elseif type == :d
+        G = BCS_G(L, :d;μ=μ,Δ=Δ);
+    else
+        error("type not implemented")
+    end
+    res = Vector{ComplexF64}(undef, L-1);
+    o = Op(8);
+    Δcre = ad(o,1)*ad(o,4)-ad(o,2)*ad(o,3);
+    Δana = a(o,8)*a(o,5)-a(o,7)*a(o,6);
+    obs = Δcre;
     for i in 1:L-1
         Is = [Cartesian2Index([1,1],[L,L],1),
               Cartesian2Index([1,1],[L,L],2),
@@ -31,6 +75,37 @@ function singlet_pairing_scaling(L::Int64, type::Symbol; μ::Float64=0.5,Δ::Flo
     end
     return res
 end
+
+res_s = singlet_pairing_scaling(13, :s;Δ=5.0,μ=0.5,connect=true);
+res_d = singlet_pairing_scaling(13, :d;Δ=5.0,μ=0.5,connect=true);
+res_s_bare = singlet_pairing_scaling(13, :s;Δ=5.0,μ=0.5,connect=false);
+res_d_bare = singlet_pairing_scaling(13, :d;Δ=5.0,μ=0.5,connect=false);
+begin
+    plt.plot(real(res_s), label="swave(connected)")
+    plt.plot(real(res_d), label="dwave(connected)")
+    plt.plot(real(res_s_bare), label="swave(bare)",linestyle="--")
+    plt.plot(real(res_d_bare), label="dwave(bare)",linestyle="--")
+    plt.legend()
+    plt.xlabel("distance |i-j|",fontsize = 15)
+    plt.show()
+end
+
+function dwave_pairing_scaling(L::Int64, type::Symbol; μ::Float64=0.5,Δ::Float64=5.0,connect=true)
+    if type == :s
+        G = BCS_G(L, :s;μ=μ,Δ=Δ);
+    elseif type == :d
+        G = BCS_G(L, :d;μ=μ,Δ=Δ);
+    else
+        error("type not implemented")
+    end
+    res = Vector{ComplexF64}(undef, L-1);
+    o = Op(8);
+    Δcre = ad(o,1)*ad(o,4)-ad(o,2)*ad(o,3);
+    Δana = a(o,8)*a(o,5)-a(o,7)*a(o,6);
+end
+
+Cartesian2Index([1,2],[3,3],1)
+
 
 
 
@@ -264,20 +339,3 @@ begin
     plt.show()
 end
 
-
-
-scaling1_s
-scaling2_s
-scaling1_d
-scaling2_d
-
-
-o = Op(8);
-Δidag = ad(o,1)*ad(o,4)-ad(o,2)*ad(o,3);
-Δjdag = ad(o,5)*ad(o,8)-ad(o,6)*ad(o,7);
-Δidag'*Δjdag≈Δjdag*Δidag'
-
-
-o = Op(4);
-Δidag = ad(o,1)*ad(o,4)-ad(o,2)*ad(o,3)
-Matrix((Δidag+Δidag'))
