@@ -1,15 +1,15 @@
 using Fermionic
 using PythonCall
 using LinearAlgebra
-########### Compare with analytical result on <c*_{xi,yi,up}c*_{xi+l,yi,down}>
-function analytical_two_fermion(l::Int64, L::Int64, type::Symbol; μ::Float64=0.5,Δ::Float64=5.0)
+########### Compare with analytical result on <c*_{0,0,up}c*_{xi,yi,down}>
+function analytical_two_fermion(xi::Int64, yi::Int64, L::Int64, type::Symbol; μ::Float64=0.5,Δ::Float64=5.0)
     res = 0.0+0.0im
     for kx in 0:(L-1)
         for ky in 0:(L-1)
-            res += conj(a_coef(2π*kx/L,2π*ky/L,type;μ=μ,Δ=Δ))*exp(1im*(2π*kx*l/L))/(L^2)/(abs(a_coef(2π*kx/L,2π*ky/L,type;μ=μ,Δ=Δ))^2+1.0)
+            res += conj(a_coef(2π*kx/L,2π*ky/L,type;μ=μ,Δ=Δ))*exp(1im*(2π*(kx*xi+ky*yi)/L))/(abs(a_coef(2π*kx/L,2π*ky/L,type;μ=μ,Δ=Δ))^2+1.0)
         end
     end
-    return res
+    return res/(L^2)
 end
 ########### Compare with analytical result on <c*_{0,0,up}c*_{xj,yj,down}c_{xk,yk,up}c_{xl,yl,down}>
 function analytical_four_fermion(xj::Int64,yj::Int64,xk::Int64,yk::Int64,xl::Int64,yl::Int64, L::Int64, type::Symbol; μ::Float64=0.5,Δ::Float64=5.0)

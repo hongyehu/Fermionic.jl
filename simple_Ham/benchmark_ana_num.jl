@@ -81,3 +81,9 @@ BCS_G(3, :d;μ=0.5,Δ=5.0)
 
 # Define a square matrix
 A = [1.0 0.5; 0.5 1.0]
+
+G = getBCSaij(2, :d;μ=0.5,Δ=5.0)
+begin
+    plt.imshow(real(G)) 
+    plt.show()
+end

@@ -39,10 +39,10 @@ function get_α_β(G,Is::Vector{Int64},N::Int64)
     c = new_G[1:region_size,region_size+1:end]*inv(Matrix{Float64}(I, N-region_size, N-region_size)-real(new_G[region_size+1:end,region_size+1:end]))
     # print("debug: ","\n")
     # display(Matrix{Float64}(I, N-region_size, N-region_size)-new_G[region_size+1:end,region_size+1:end])
-    print("a11: ",  "\n")
-    display(round.(new_G[1:region_size,1:region_size],digits=4))
-    print("a12: ", "\n")
-    display(round.(new_G[1:region_size,region_size+1:end],digits=4))
+    # print("a11: ",  "\n")
+    # display(round.(new_G[1:region_size,1:region_size],digits=4))
+    # print("a12: ", "\n")
+    # display(round.(new_G[1:region_size,region_size+1:end],digits=4))
     # α = (new_G[1:region_size,1:region_size]+c*new_G[region_size+1:end,region_size+1:end]*transpose(c)).*0.5
     α = (new_G[1:region_size,1:region_size]-c*new_G[region_size+1:end,region_size+1:end]*transpose(c)).*0.5
     β = c*transpose(c)
@@ -91,8 +91,10 @@ function BCS_G(L::Int64, type::Symbol;μ::Float64=0.5,Δ::Float64=5.0)
                     x_coor = Cartesian2Index([i,j],[L,L],1)
                     y_coor = Cartesian2Index([ip,jp],[L,L],2)
                     Gtmp = 0.0+0.0im
-                    for kx in Int(-(L-1)/2):1:Int((L-1)/2)#1:L
-                        for ky in Int(-(L-1)/2):1:Int((L-1)/2)
+                    # for kx in Int(-(L-1)/2):1:Int((L-1)/2)#1:L
+                    #     for ky in Int(-(L-1)/2):1:Int((L-1)/2)
+                    for kx in 1:L
+                        for ky in 1:L
                             # print("kx: ", kx, " ky: ", ky, " acoef: ", a_coef(2π*kx/L,2π*ky/L,type;μ=μ,Δ=Δ) ,"\n")
                             Gtmp += a_coef(2π*kx/L,2π*ky/L,type;μ=μ,Δ=Δ)*exp(1im*(2π*kx/L*(i-ip)+2π*ky/L*(j-jp)))/(L^2)
                         end
@@ -227,7 +229,7 @@ function RDM(G::Matrix{ComplexF64},Is::Vector{Int64})
     return ρ
 end
 
-# G = getBCSaij(3, :d;μ=0.5,Δ=5.0);
+
 # RDM(G,[1,2,5,6])
 # for i in diag(RDM(G,[1,2,5,6]))
 #     println(i)
