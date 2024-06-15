@@ -197,14 +197,14 @@ function a_coef(kx::Float64,ky::Float64, type::Symbol;μ::Float64=0.5,Δ::Float6
         return Δfun(kx,ky,type;Δ=Δ)/(sqrt(Δfun(kx,ky,type;Δ=Δ)^2+ξfun(kx,ky;μ=μ)^2)+ξfun(kx,ky;μ=μ))
     end
 end
-function RDM(G::Matrix{ComplexF64},sites::Matrix{Int64})
+function RDM(G::Matrix{ComplexF64},sites::Vector{Vector{Int64}})
     # L is the lattice size of the two dimensional lattice (spinfull-fermions)
     # sites is the coordinates of the sites that we want to keep[[x1,y1],[x2,y2],...]
     L = Int64(sqrt(size(G)[1]/2))
     Is = Vector{Int64}()
     for i in 1:size(sites)[1]
-        push!(Is,Cartesian2Index([sites[i,1],sites[i,2]],[L,L],1))
-        push!(Is,Cartesian2Index([sites[i,1],sites[i,2]],[L,L],2))
+        push!(Is,Cartesian2Index([sites[i][1],sites[i][2]],[L,L],1))
+        push!(Is,Cartesian2Index([sites[i][1],sites[i][2]],[L,L],2))
     end
     Gtmp,cs = shuffle_G(G,Is,2*L^2);
     α, β = get_α_β(Gtmp,Is,2*L^2);
@@ -221,16 +221,76 @@ function RDM(G::Matrix{ComplexF64},Is::Vector{Int64})
     Gtmp,cs = shuffle_G(G,Is,2*L^2);
 
     α, β = get_α_β(Gtmp,Is,2*L^2);
-    # print("α: ","\n")
-    # display(round.(α,digits=4))
-    # print("β: ","\n")
-    # display(round.(β,digits=4),)
     ρ = get_full_RDM(α,β,size(Is)[1]);
     return ρ
 end
-
-
-# RDM(G,[1,2,5,6])
-# for i in diag(RDM(G,[1,2,5,6]))
-#     println(i)
-# end
+####### Particle-Hole PH_transformation ############
+# We need a function that takes the sites::Matrix{Int64} and returns the sites
+# that needs to be applied to PH transformation together with the signs
+function PH_transformation_indices(L::Int64,sites::Vector{Vector{Int64}})
+    # L is the lattice size of the two dimensional lattice (spinfull-fermions)
+    # sites is the coordinates of the sites that we want to keep[[x1,y1],[x2,y2],...]
+    Is = Vector{Int64}()
+    Transform = Vector{Int64}()
+    Signs = Vector{Float64}()
+    for i in 1:size(sites)[1]
+        push!(Is,Cartesian2Index([sites[i][1],sites[i][2]],[L,L],1))
+        push!(Transform,0) #Don't transform
+        push!(Signs,1.0)
+        push!(Is,Cartesian2Index([sites[i][1],sites[i][2]],[L,L],2))
+        push!(Transform,1) #PH Transform
+        if mod(sites[i][1]+sites[i][2],2) == 0
+            push!(Signs,1.0)
+        else
+            push!(Signs,-1.0)
+        end
+    end
+    return Is,Transform,Signs
+end
+function get_full_RDM_PH(α::Matrix{ComplexF64},β::Matrix{ComplexF64},Nsub::Int,Transform::Vector{Int64},Signs::Vector{Float64})
+    # Nsub is the number of spinless fermion
+    logβ = logmat(β);
+    o = Op(Nsub);
+    term1 = zeros(ComplexF64,2^Nsub,2^Nsub);
+    term2 = zeros(ComplexF64,2^Nsub,2^Nsub);
+    term3 = zeros(ComplexF64,2^Nsub,2^Nsub);
+    for i in 1:size(α)[1]
+        for j in 1:size(α)[2]
+            ##
+            if Transform[i]==0&&Transform[j]==0
+                term1 += α[i,j]*ad(o,i)*ad(o,j)
+                term2 += logβ[i,j]*ad(o,i)*a(o,j)
+                term3 -= α[i,j]*a(o,i)*a(o,j)
+            elseif Transform[i]==1&&Transform[j]==1
+                term1 += α[i,j]*Signs[i]*Signs[j]*a(o,i)*a(o,j)
+                term2 += logβ[i,j]*Signs[i]*Signs[j]*a(o,i)*ad(o,j)
+                term3 -= α[i,j]*Signs[i]*Signs[j]*ad(o,i)*ad(o,j)
+            elseif Transform[i]==0&&Transform[j]==1
+                term1 += α[i,j]*Signs[j]*ad(o,i)*a(o,j)
+                term2 += logβ[i,j]*Signs[j]*ad(o,i)*ad(o,j)
+                term3 -= α[i,j]*Signs[j]*a(o,i)*ad(o,j)
+            elseif Transform[i]==1&&Transform[j]==0
+                term1 += α[i,j]*Signs[i]*a(o,i)*ad(o,j)
+                term2 += logβ[i,j]*Signs[i]*a(o,i)*a(o,j)
+                term3 -= α[i,j]*Signs[i]*ad(o,i)*a(o,j)
+            end
+            ##
+        end
+    end
+    unnorm_RDM = exp(Matrix(term1))*exp(Matrix(term2))*exp(Matrix(term3));
+    unnorm_RDM = 0.5.*(unnorm_RDM+transpose(unnorm_RDM));
+    return unnorm_RDM./real(tr(unnorm_RDM))
+end
+"""
+Particle-hole transformed reduced density matrix
+"""
+function RDM_PH(G::Matrix{ComplexF64},sites::Vector{Vector{Int64}})
+    # L is the lattice size of the two dimensional lattice (spinfull-fermions)
+    # sites is the coordinates of the sites that we want to keep[[x1,y1],[x2,y2],...]
+    L = Int64(sqrt(size(G)[1]/2))
+    Is, Transform, Signs = PH_transformation_indices(L, sites)
+    Gtmp,cs = shuffle_G(G,Is,2*L^2);
+    α, β = get_α_β(Gtmp,Is,2*L^2);
+    ρ = get_full_RDM_PH(α,β,size(Is)[1],Transform,Signs);
+    return ρ
+end

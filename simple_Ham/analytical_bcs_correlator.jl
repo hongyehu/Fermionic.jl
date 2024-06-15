@@ -77,8 +77,10 @@ end
 
 ### Real space pairing pattern
 L = 33
-s_real_space = real_space_pairing(L,:s;μ=3.0,Δ=0.1)
-d_real_space = real_space_pairing(L,:d;μ=3.0,Δ=0.1)
+μ=0.2
+Δ=0.2
+s_real_space = real_space_pairing(L,:s;μ=μ,Δ=Δ)
+d_real_space = real_space_pairing(L,:d;μ=μ,Δ=Δ)
 center = (L + 1) ÷ 2
 # Calculate the shift needed to move [1, 1] to the center
 shift_row = center - 1
@@ -99,13 +101,15 @@ end
 
 
 ######## Calculation
-L = 23
-s_single_correlation_4_swave = [single_site_s_pairing_correlation(l,L,:s;μ=3.0,Δ=0.1) for l in 1:Int((L-1)/2)]
-s_single_correlation_4_dwave = [single_site_s_pairing_correlation(l,L,:d;μ=3.0,Δ=0.1) for l in 1:Int((L-1)/2)]
-s_correlation_4_swave = [s_pairing_correlation(l,L,:s;μ=3.0,Δ=0.1) for l in 1:Int((L-1)/2)]
-s_correlation_4_dwave = [s_pairing_correlation(l,L,:d;μ=3.0,Δ=0.1) for l in 1:Int((L-1)/2)]
-d_correlation_4_swave = [d_pairing_correlation(l,L,:s;μ=0.2,Δ=0.1) for l in 1:Int((L-1)/2)]
-d_correlation_4_dwave = [d_pairing_correlation(l,L,:d;μ=0.2,Δ=0.1) for l in 1:Int((L-1)/2)]
+L = 25
+μ=0.2
+Δ=0.2
+s_single_correlation_4_swave = [single_site_s_pairing_correlation(l,L,:s;μ=μ ,Δ=Δ) for l in 1:Int((L-1)/2)]
+s_single_correlation_4_dwave = [single_site_s_pairing_correlation(l,L,:d;μ=μ ,Δ=Δ) for l in 1:Int((L-1)/2)]
+s_correlation_4_swave = [s_pairing_correlation(l,L,:s;μ=μ ,Δ=Δ) for l in 1:Int((L-1)/2)]
+s_correlation_4_dwave = [s_pairing_correlation(l,L,:d;μ=μ ,Δ=Δ) for l in 1:Int((L-1)/2)]
+d_correlation_4_swave = [d_pairing_correlation(l,L,:s;μ=μ ,Δ=Δ) for l in 1:Int((L-1)/2)]
+d_correlation_4_dwave = [d_pairing_correlation(l,L,:d;μ=μ ,Δ=Δ) for l in 1:Int((L-1)/2)]
 begin
     f = plt.figure(figsize=(4,2.5))
     plt.plot(1:Int((L-1)/2),abs.(real(s_single_correlation_4_swave)),marker = ".",label="s-wave")
@@ -142,3 +146,4 @@ begin
     # f.savefig("d_correlation.pdf", bbox_inches="tight")
 end
 
+0.15/sqrt(2000)

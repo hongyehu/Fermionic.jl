@@ -1,3 +1,4 @@
+using Distributions
 function Cartesian2Index(C_coor::AbstractArray{<:Int64},Lattice::AbstractArray{<:Int64},Spin::Int)
     """
     Row first ordering. 
@@ -420,6 +421,14 @@ function measure!(state::AbstractArray{<:ComplexF64})
     idn = rand(dist,1)[1]
     state = spzeros(Complex{Float64},length(state))
     state[idn] = 1.0
+    return idn,state
+end
+function ρmeasure!(state::Matrix{<:ComplexF64})
+    prob = real(diag(state))
+    dist = Categorical(prob)
+    idn = rand(dist,1)[1]
+    state = spzeros(Complex{Float64},size(state))
+    state[idn,idn] = 1.0
     return idn,state
 end
 

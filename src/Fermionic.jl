@@ -22,7 +22,7 @@ export rhosp_mixed, eigensp_mixed
 
 include("model.jl")
 export Cartesian2Index, SpinFullFermiHubbard,SpinFullFermiHubbardSubspace,SpinFullRandomState
-export SpinFullRandomStateSubspace,GHZSubspace,measure!
+export SpinFullRandomStateSubspace,GHZSubspace,measure!,ρmeasure!
 export Hopping, random_δ, random_θ, random_horizontal_δ, random_vertical_δ
 export Dwave, global_spin_X_rot,local_spin_X_rot
 export transformed_Dwave, transformed_SpinFullFermiHubbardSubspace
@@ -32,5 +32,6 @@ export  ShadowBasis, ShadowBasis_Global_Xrot,ShadowBasis_Local_Xrot
 
 include("BCS.jl")
 export RDM, BCS_G, a_coef, Δfun, ξfun, shuffle_G,getBCSaij, index2coordinates, getak
+export RDM_PH
 
 end # module

@@ -137,7 +137,7 @@ G, gs = generate_full_BCS_wavefunction(L,type;μ=μ,Δ=Δ);
 o = Op(2*L^2)
 test_ob = ad(o,site1)*a(o,site2)
 num_exp = round(gs'*test_ob*gs,digits=5)
-ρ=RDM(G,[site1,site2])
+ρ=RDM(2*G,[site1,site2])
 ro = Op(2)
 tr(ρ*ad(ro,1)*a(ro,2))
 println(tr(ρ*ad(ro,1)*ad(ro,2))≈num_exp)
@@ -180,3 +180,37 @@ analytical_two_fermion(0,1,L,type,μ=μ,Δ=Δ)
 ρ=RDM(2*G,[1,6])
 tr(ρ*ad(Op(2),1)*ad(Op(2),2))
 
+
+
+
+ro = Op_fixed(2*2,2)
+basis(ro)
+O = ada(ro,1,4)-ada(ro,3,2)+ada(ro,4,1)-ada(ro,2,3)
+eigen(Matrix(O))
+
+
+### a test for <c*_{x,up}c*_{y,down}>=<c_{y,down}c_{x,up}>
+L = 2
+μ = rand()
+Δ = rand()*5
+site1 = 1
+site2 = 8
+type = :s
+G, gs = generate_full_BCS_wavefunction(L,type;μ=μ,Δ=Δ);
+o = Op(2*L^2)
+test_ob = ad(o,site1)*ad(o,site2)
+num_exp = round(gs'*test_ob*gs,digits=5)
+test_ob = a(o,site2)*a(o,site1)
+num_exp = round(gs'*test_ob*gs,digits=5)
+## Partial trace version
+L = 4
+μ = rand()
+Δ = rand()*5
+type = :d
+G = BCS_G(L, type;μ=μ,Δ=Δ);
+site1 = 1
+site2 = 10
+ρ=RDM(2*G,[site1,site2])
+ro = Op(2)
+tr(ρ*ad(ro,1)*ad(ro,2))
+tr(ρ*a(ro,2)*a(ro,1))
