@@ -14,7 +14,7 @@ G = BCS_G(L,type)
 ρ = RDM_PH(G,[[2,1],[2,2],[2,5],[2,6]])
 tr(ρ*obs)
 
-measure_times = 10000
+measure_times = 1000000
 rotate_ρ = v'*ρ*v
 measure_res = []
 for i in 1:measure_times
@@ -22,3 +22,4 @@ for i in 1:measure_times
     push!(measure_res,u[ind])
 end
 mean(measure_res)
+std(measure_res)/sqrt(measure_times)
