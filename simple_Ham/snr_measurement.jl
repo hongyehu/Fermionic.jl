@@ -53,13 +53,13 @@ function main()
     dis = parsed_args["distance"];
     sample_res = Dict{Any, Any}();
     signs = [1.0,-1.0,-1.0,1.0];
-    mean_value = 0.0;
-    true_mean_value = 0.0;
     for bt in 1:parsed_args["bootstrap"]
+        mean_value = 0.0;
+        true_mean_value = 0.0;
         stds=[];
         for left in 1:4
             for right in 1:4
-                println("left: $left, right: $right")
+                println("bootstrap: $bt, left: $left, right: $right")
                 obs = two_paddle_obs(left=left,right=right)
                 u, v = eigen(Matrix(obs))
                 # tmp = v'*(Matrix(obs))*v
@@ -112,10 +112,12 @@ function main()
         sample_res["mean_$bt"] = mean_value
         sample_res["true_mean_$bt"] = real(true_mean_value)
         sample_res["std_$bt"] = total_std
+        if bt==1
+            println("mean value: $mean_value")
+            println("total std: $total_std")
+            println("true mean value: $true_mean_value")
+        end
     end
-    println("mean value: $mean_value")
-    println("total std: $total_std")
-    println("true mean value: $true_mean_value")
     file_name = "/Users/hyhu/Git_Code/Fermionic.jl/simple_Ham/simple_direct_measurement_data/SNR_data/L$(parsed_args["L"])_type$(parsed_args["type"])_dis$(parsed_args["distance"])_Delta$(parsed_args["Delta"])_mu$(parsed_args["mu"])_samples$(parsed_args["samples"])_bootstrap$(parsed_args["bootstrap"]).json"
     open(file_name, "w") do io
         JSON3.write(io, sample_res)
