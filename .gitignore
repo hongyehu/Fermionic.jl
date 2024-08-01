@@ -9,3 +9,4 @@
 *.CondaPkg
 settings.json
 /simple_Ham/simple_direct_measurement_data/*
+/simple_Ham/dmrg_data
