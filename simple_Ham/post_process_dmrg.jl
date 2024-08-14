@@ -109,10 +109,10 @@ begin
     font = Dict("family"=>"seif","size"=>14)
     plt.xlabel(raw"$r=|i-j|$",fontdict = font)
     plt.ylabel(raw"$\langle \widetilde{O}_i \widetilde{O}_j\rangle$",fontdict = font)
-    plt.yscale("log")
+    # plt.yscale("log")
     plt.xscale("log") 
     plt.show()
-    fig.savefig("./dmrg_1k_measure.pdf",bbox_inches = "tight")
+    # fig.savefig("./dmrg_1k_measure.pdf",bbox_inches = "tight")
 end
 # data = Dict("x"=>collect(2:2:50),"exp_mean"=>means,"exp_std"=>stds,"theory"=>my_expectations)
 # open("./dmrg_1kk_measurement.json", "w") do io

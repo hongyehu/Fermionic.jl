@@ -34,18 +34,18 @@ begin
     color_SNR50 = "#408fbf"
     color_SNR100 = "#89BED9"
     color_SNR300 = "#BFDAE9"
-    f = plt.figure(figsize = (5.5,2.5))
+    f = plt.figure(figsize = (4,2))
     # plt.xlim([0.05,2.0])
     # plt.ylim([30,100])
     # plt.plot(Δs,20*log.(SNR),marker="o")
-    plt.plot(Δs, SNR50, color=color_SNR50, label="50 Measurements")
-    plt.plot(Δs, SNR100, color=color_SNR100, label="100 Measurements")
-    plt.plot(Δs, SNR300, color=color_SNR300, label="300 Measurements")
+    plt.plot(Δs, SNR50, color=color_SNR50, label="50 Meas.")
+    plt.plot(Δs, SNR100, color=color_SNR100, label="100 Meas.")
+    plt.plot(Δs, SNR300, color=color_SNR300, label="300 Meas.")
 
     # Add labels and legend (optional)
     plt.xlabel("Δ")
     plt.ylabel("Linear SNR")
-    plt.legend(frameon=false, ncol=1, loc="lower right", bbox_to_anchor=(1.0, -0.04))
+    plt.legend(frameon=false, ncol=1, loc="lower right", bbox_to_anchor=(1.0, -0.04),fontsize = 8)
     plt.show()
-    # f.savefig("/Users/hyhu/Git_Code/Fermionic.jl/simple_Ham/SNR.pdf",bbox_inches = "tight")
+    # f.savefig("/Users/hyhu/Git_Code/Fermionic.jl/simple_Ham/SNR_v2.pdf",bbox_inches = "tight")
 end
