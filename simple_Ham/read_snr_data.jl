@@ -49,3 +49,8 @@ begin
     plt.show()
     # f.savefig("/Users/hyhu/Git_Code/Fermionic.jl/simple_Ham/SNR_v2.pdf",bbox_inches = "tight")
 end
+
+Δ=0.2
+filename = "/Users/hyhu/Git_Code/Fermionic.jl/simple_Ham/simple_direct_measurement_data/SNR_data/L56_type1_dis7_Delta$(Δ)_mu0.5_samples500_bootstrap10.json"
+data = JSON3.read(filename)
+data["mean_2"]

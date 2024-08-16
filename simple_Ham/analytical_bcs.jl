@@ -71,48 +71,48 @@ end
 #     return res/(L^2) 
 # end
 ## Plot the pairing function
-begin
-    L=31
-    μ=0.2
-    Δ=0.2
-    type = :s
-    Test_s = zeros(Complex{Float64},L,L)
-    for x in 1:L
-        for y in 1:L
-            Test_s[x,y] = SpinSymmetricPairWave(x,y,L,:s,μ=μ,Δ=Δ)
-        end
-    end
-    type=:d
-    Test_d = zeros(Complex{Float64},L,L)
-    for x in 1:L
-        for y in 1:L
-            Test_d[x,y] = SpinSymmetricPairWave(x,y,L,:d,μ=μ,Δ=Δ)
-        end
-    end
-    center = (L + 1) ÷ 2
-    # Calculate the shift needed to move [1, 1] to the center
-    shift_row = center 
-    shift_col = center 
-    # Use circshift to shift the matrix
-    shifted_Test_s = circshift(Test_s, (shift_row, shift_col))
-    shifted_Test_d = circshift(Test_d, (shift_row, shift_col))
-    begin
-        # vmin = minimum([minimum(abs.(s_real_space)), minimum(abs.(d_real_space))])
-        # vmax = maximum([maximum(abs.(s_real_space)), maximum(abs.(d_real_space))])
-        fig, axs = plt.subplots(1, 2, figsize=(10, 5))
-        img1 = axs[0].imshow(real(shifted_Test_s),cmap="Oranges_r")
-        axs[0].set_title("s-wave")
-        img2 = axs[1].imshow(real(shifted_Test_d),cmap="Oranges_r")
-        axs[1].set_title("d-wave")
-        fig.colorbar(img1, ax=axs[0])
-        fig.colorbar(img2, ax=axs[1])
-        plt.show()
-        # fig.savefig("real_space_pairing_strong_limit.pdf", bbox_inches="tight")
-    end
-end
+# begin
+#     L=31
+#     μ=0.2
+#     Δ=0.2
+#     type = :s
+#     Test_s = zeros(Complex{Float64},L,L)
+#     for x in 1:L
+#         for y in 1:L
+#             Test_s[x,y] = SpinSymmetricPairWave(x,y,L,:s,μ=μ,Δ=Δ)
+#         end
+#     end
+#     type=:d
+#     Test_d = zeros(Complex{Float64},L,L)
+#     for x in 1:L
+#         for y in 1:L
+#             Test_d[x,y] = SpinSymmetricPairWave(x,y,L,:d,μ=μ,Δ=Δ)
+#         end
+#     end
+#     center = (L + 1) ÷ 2
+#     # Calculate the shift needed to move [1, 1] to the center
+#     shift_row = center 
+#     shift_col = center 
+#     # Use circshift to shift the matrix
+#     shifted_Test_s = circshift(Test_s, (shift_row, shift_col))
+#     shifted_Test_d = circshift(Test_d, (shift_row, shift_col))
+#     begin
+#         # vmin = minimum([minimum(abs.(s_real_space)), minimum(abs.(d_real_space))])
+#         # vmax = maximum([maximum(abs.(s_real_space)), maximum(abs.(d_real_space))])
+#         fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+#         img1 = axs[0].imshow(real(shifted_Test_s),cmap="Oranges_r")
+#         axs[0].set_title("s-wave")
+#         img2 = axs[1].imshow(real(shifted_Test_d),cmap="Oranges_r")
+#         axs[1].set_title("d-wave")
+#         fig.colorbar(img1, ax=axs[0])
+#         fig.colorbar(img2, ax=axs[1])
+#         plt.show()
+#         # fig.savefig("real_space_pairing_strong_limit.pdf", bbox_inches="tight")
+#     end
+# end
 
-analytical_two_fermion(0,0,23,:d;μ=0.2,Δ=0.2)*2
-SpinSymmetricPairWave(0,0,23,:d;μ=0.2,Δ=0.2)
+# analytical_two_fermion(0,0,23,:d;μ=0.2,Δ=0.2)*2
+# SpinSymmetricPairWave(0,0,23,:d;μ=0.2,Δ=0.2)
 
 # analytical_n_up(17,:s;μ=0.0,Δ=0.1)
 # analytical_n_down(17,:s;μ=0.0,Δ=0.1)
@@ -122,4 +122,4 @@ SpinSymmetricPairWave(0,0,23,:d;μ=0.2,Δ=0.2)
 # Δ=0.2
 # type=:s
 # analytical_n_up(L,type;μ=μ,Δ=Δ)+analytical_n_up(L,type;μ=μ,Δ=Δ)
-so = 
+# so = 

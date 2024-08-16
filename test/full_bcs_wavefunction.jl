@@ -19,18 +19,18 @@ function generate_full_BCS_wavefunction(L::Int64, type::Symbol; μ::Float64=0.5,
             generator += G[i,j].*Matrix(ad(o,i)*ad(o,j))
         end
     end
-    Projector = exp(0.5.*Matrix(generator))
+    Projector = exp(1.0.*Matrix(generator))
     vaccum = zeros(ComplexF64,2^(2*L^2))
     vaccum[1] = 1.0
     groundstate = Projector*vaccum
     return groundstate./sqrt(groundstate'*groundstate)
 end
-gs = generate_full_BCS_wavefunction(2,:s;μ=0.5,Δ=5.0)
+gs = generate_full_BCS_wavefunction(2,:d;μ=0.5,Δ=5.0)
 o = Op(8)
-test_ob = ad(o,1)*ad(o,8)
+test_ob = ad(o,1)*ad(o,6)
 num_exp = gs'*test_ob*gs
-G = BCS_G(2, :s ;μ=0.5,Δ=5.0)
-ρ=RDM(G,[1,8])
+G = BCS_G(2, :d ;μ=0.5,Δ=5.0)
+ρ=RDM(2*G,[1,6])
 ro = Op(2)
 tr(ρ*ad(ro,1)*ad(ro,2))
 
