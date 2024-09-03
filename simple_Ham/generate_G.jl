@@ -13,7 +13,7 @@ function parse_commandline()
         "--L"
             help = "lattice size"
             arg_type = Int
-            default = 16
+            default = 24
         "--type"
             help = "type of BCS state, 0 for s-wave, 1 for d-wave"
             arg_type = Int
@@ -21,7 +21,7 @@ function parse_commandline()
         "--Delta"
             help = "Delta for BCS theory"
             arg_type = Float64
-            default = 5.0
+            default = 0.1
         "--mu"
             help = "mu for BCS theory"
             arg_type = Float64

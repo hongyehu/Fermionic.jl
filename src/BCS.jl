@@ -230,6 +230,10 @@ end
 function PH_transformation_indices(L::Int64,sites::Vector{Vector{Int64}})
     # L is the lattice size of the two dimensional lattice (spinfull-fermions)
     # sites is the coordinates of the sites that we want to keep[[x1,y1],[x2,y2],...]
+    # Return:
+    # Is: the indices of the sites that we want to keep (one dimensional indices)
+    # Transform: 0 for no transformation, 1 for PH transformation (spin-up no transform, spin-down transform)
+    # Signs: 1 for no transformation (or transform with 1.0 sign), -1 for PH transformation
     Is = Vector{Int64}()
     Transform = Vector{Int64}()
     Signs = Vector{Float64}()
