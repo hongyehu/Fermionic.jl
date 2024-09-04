@@ -72,27 +72,84 @@ for super_x in 1:6
         end
     end
 end
-L=24
-type = :d
-G_file_name = "/Users/hyhu/Git_Code/Fermionic.jl/simple_Ham/simple_direct_measurement_data/G/L$(L)_type1_Delta0.3_mu0.5.jld2"
-@load G_file_name G
-
-bond_bond_correlation(G, 1,4,6)
-
+"""
+Real Data
+"""
 scalars = [] # Example scalar values
 for super_x in 1:6
     for super_y in 1:6
-        for index in 1:8
-            println("super x:$(super_x) super y:$(super_y) index:$(index)")
-            push!(scalars,bond_bond_correlation(G, super_x,super_y,index))
+        for ori_index in 1:8
+            shift_super_x = mod(super_x-3,6)+1
+            shift_super_y = mod(super_y-3,6)+1
+            if ori_index == 1
+                index = 8
+            elseif ori_index == 2
+                index = 7
+            elseif ori_index == 3
+                index = 6
+            elseif ori_index == 4
+                index = 5
+            elseif ori_index == 5
+                index = 4
+            elseif ori_index == 6
+                index = 3
+            elseif ori_index == 7
+                index = 2
+            elseif ori_index == 8
+                index = 1
+            end
+            if shift_super_x == 1 && shift_super_y == 1 && index == 1
+                push!(scalars,0.0)
+            else
+                println("super x:$(super_x) super y:$(super_y) index:$(index)")
+                file_name = "/Users/hyhu/Git_Code/Fermionic.jl/simple_Ham/simple_direct_measurement_data/bond_bond_data/L24_type1_superx$(shift_super_x)_supery$(shift_super_y)_index$(index)_Delta0.3_mu0.5_samples500.json"
+                open(file_name, "r") do io
+                    data = JSON3.read(io)
+                    tmp = data["mean"]
+                    push!(scalars,tmp)
+                end
+            end
         end
     end
 end
 
+
 scalars
+
+"""
+Synthetic Data 
+"""
+# L=24
+# type = :d
+# G_file_name = "/Users/hyhu/Git_Code/Fermionic.jl/simple_Ham/simple_direct_measurement_data/G/L$(L)_type1_Delta0.3_mu0.5.jld2"
+# @load G_file_name G
+
+# bond_bond_correlation(G, 1,4,6)
+
+# scalars = [] # Example scalar values
+# for super_x in 1:6
+#     for super_y in 1:6
+#         for index in 1:8
+#             println("super x:$(super_x) super y:$(super_y) index:$(index)")
+#             push!(scalars,bond_bond_correlation(G, super_x,super_y,index))
+#         end
+#     end
+# end
+# scalars
+# rescaled_scalars = real.(scalars)
+rectangles
+"""
+Plot 2D bond-bond-bricks
+"""
 rescaled_scalars = real.(scalars)
+for i in 1:size(scalars)[1]
+    if real(scalars[i])==0.0
+        println(i)
+    end
+end
+rectangles[120]
 begin
-    plt.plot(rescaled_scalars)
+    plt.plot(rescaled_scalars,"o")
     plt.show()
 end
 max_value = maximum(abs.(rescaled_scalars))
@@ -102,7 +159,7 @@ begin
     # Create a figure and axis
     fig, ax = plt.subplots(figsize = (3,3))
     boxstyle = "round,pad=0.02,rounding_size=0.1" 
-    colormap = cm.bwr
+    colormap = cm.coolwarm
     colors = colormap(rescaled_scalars)  # Map scalar values to colors
 
     # Add rectangles to the plot
@@ -119,12 +176,22 @@ begin
             )
         )
     end
+    ax.add_patch(
+        patches.FancyBboxPatch(
+            (10.75,9.75), 0.5, 1.5,
+            edgecolor="lightgrey",
+            boxstyle=boxstyle,
+            facecolor="whitesmoke",  # No fill
+            linewidth=1.0,     # Optional: adjust the line width as needed
+            alpha=1.0          # Optional: full opacity
+        )
+    )
     # Set limits, labels, etc.
     ax.set_xlim(-1, 4*6)
     ax.set_ylim(-1, 4*6)
     ax.set_aspect("equal", "box")
     ax.axis("off")
-
+    fig.savefig("./bond_bond_correlation.pdf",bbox_inches = "tight")
     # Show plot
     plt.show()
 end
