@@ -32,6 +32,6 @@ export  ShadowBasis, ShadowBasis_Global_Xrot,ShadowBasis_Local_Xrot
 
 include("BCS.jl")
 export RDM, BCS_G, a_coef, Δfun, ξfun, shuffle_G,getBCSaij, index2coordinates, getak
-export RDM_PH, two_paddle_obs
+export RDM_PH, two_paddle_obs,PH_transformation_indices,get_full_RDM_PH
 
 end # module

@@ -12,7 +12,7 @@ include("./analytical_2d_bond.jl")
 plt = pyimport("matplotlib.pyplot")
 cm = pyimport("matplotlib.cm")
 patches = pyimport("matplotlib.patches")
-mcolors = pyimport("matplotlib.colors")
+# mcolors = pyimport("matplotlib.colors")
 
 """
 A function that generate xy location, width, height of the FancyBboxPatch
@@ -74,10 +74,10 @@ for super_x in 1:6
 end
 L=24
 type = :d
-G_file_name = "/Users/hyhu/Git_Code/Fermionic.jl/simple_Ham/simple_direct_measurement_data/G/L$(L)_type1_Delta0.1_mu0.5.jld2"
+G_file_name = "/Users/hyhu/Git_Code/Fermionic.jl/simple_Ham/simple_direct_measurement_data/G/L$(L)_type1_Delta0.3_mu0.5.jld2"
 @load G_file_name G
 
-bond_bond_correlation(G, 2,3,1)
+bond_bond_correlation(G, 1,4,6)
 
 scalars = [] # Example scalar values
 for super_x in 1:6
