@@ -179,11 +179,12 @@ begin
     ax.add_patch(
         patches.FancyBboxPatch(
             (10.75,9.75), 0.5, 1.5,
-            edgecolor="lightgrey",
+            edgecolor="grey",
             boxstyle=boxstyle,
             facecolor="whitesmoke",  # No fill
+            hatch="//////",  # Diagonal stripes (you can use different patterns)
             linewidth=1.0,     # Optional: adjust the line width as needed
-            alpha=1.0          # Optional: full opacity
+            alpha=1.0         # Optional: full opacity
         )
     )
     # Set limits, labels, etc.
