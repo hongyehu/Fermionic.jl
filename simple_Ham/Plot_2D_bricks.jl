@@ -191,8 +191,34 @@ begin
     ax.set_xlim(-1, 4*6)
     ax.set_ylim(-1, 4*6)
     ax.set_aspect("equal", "box")
+    # Create the color bar using the colormap and normalization
+    sm = plt.cm.ScalarMappable(cmap=colormap)
+    # sm.set_array([])  # Required for colorbar to work
+    # cbar = fig.colorbar(sm, ax=ax)
+    # cbar.set_label('Scalar Value')  # Optional: label for the color bar
     ax.axis("off")
-    fig.savefig("./bond_bond_correlation.pdf",bbox_inches = "tight")
+    fig.savefig("./bond_bond_correlation.svg",bbox_inches = "tight")
     # Show plot
+    plt.show()
+end
+
+Normalize = pyimport("matplotlib.colors").Normalize
+np = pyimport("numpy")
+begin
+    # Example data array
+    data_values = np.linspace(-max_value,max_value,100)  # Your data array
+    # Normalize the data based on its min and max
+    norm = Normalize(vmin=np.min(data_values), vmax=np.max(data_values))
+    # Create a colormap (you can use any colormap)
+    colormap = cm.coolwarm
+    # Create the ScalarMappable object to map the data to colors
+    sm = plt.cm.ScalarMappable(cmap=colormap, norm=norm)
+    # Create the color bar
+    fig, ax = plt.subplots(figsize=(2, 5))  # Adjust the size as needed
+    cbar = fig.colorbar(sm, ax=ax, orientation="vertical")  # Vertical color bar
+    # cbar.set_label("Data Value")  # Add a label for the color bar
+    # Show the plot with the color bar
+    plt.axis("off")
+    plt.savefig("./colorbar.svg",bbox_inches = "tight")
     plt.show()
 end

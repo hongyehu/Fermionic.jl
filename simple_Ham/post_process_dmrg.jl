@@ -83,6 +83,16 @@ for j in 2:2:50
 end
 
 
+## save data
+data_saved = Dict("means"=>means,"stds"=>stds,"my_expectations"=>my_expectations)
+open("snr_plot_data.json", "w") do file
+    JSON.print(file, data_saved)
+end
+
+saved_data = JSON.parsefile("snr_plot_data.json")
+means = saved_data["means"]
+stds = saved_data["stds"]
+my_expectations = saved_data["my_expectations"]
 begin
     plt.errorbar(collect(2:2:50),abs.(means),yerr=stds)
     plt.plot(collect(2:2:50),(my_expectations),"o")
@@ -98,21 +108,18 @@ for k in 1:7
     push!(individual_stds,stds[j]*sqrt(1000000/((50-j-1)*1000)))
 end
 begin
-    fig = plt.figure(figsize = (4,2))
+    fig = plt.figure(figsize = (5,2))
     plt.errorbar(collect(2:2:50)[1:7],abs.(means)[1:7],yerr=individual_stds,ls="none",marker="o",markerfacecolor="#90BCD5", markeredgecolor="#5BAEFF", ecolor="#5BAEFF",markersize = 6)#"#90BCD5"
     plt.plot(collect(2:2:50)[1:13],(my_expectations)[1:13],linestyle="--",color="#FFD06F")
     plt.ylim([1e-4,1.0])
-    # font = {"family": "serif",
-    #     "weight": "normal",
-    #     "size": 14,
-    #     }
-    font = Dict("family"=>"seif","size"=>14)
-    plt.xlabel(raw"$r=|i-j|$",fontdict = font)
-    plt.ylabel(raw"$\langle \widetilde{O}_i \widetilde{O}_j\rangle$",fontdict = font)
-    # plt.yscale("log")
+    plt.xlabel(raw"$r=|i-j|$",fontsize = 13)
+    # plt.ylabel(raw"$d-wave pairing \n correlation$", fontsize=13)
+    plt.ylabel(raw"Pairing correlation",fontsize = 13)
+    plt.text(2, 0.0002, "1000 Meas.", fontsize=10, color="black")
+    plt.yscale("log")
     plt.xscale("log") 
     plt.show()
-    # fig.savefig("./dmrg_1k_measure.pdf",bbox_inches = "tight")
+    fig.savefig("./dmrg_1k_measure_v2.svg",bbox_inches = "tight")
 end
 # data = Dict("x"=>collect(2:2:50),"exp_mean"=>means,"exp_std"=>stds,"theory"=>my_expectations)
 # open("./dmrg_1kk_measurement.json", "w") do io

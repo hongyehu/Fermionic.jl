@@ -34,7 +34,7 @@ begin
     color_SNR50 = "#408fbf"
     color_SNR100 = "#89BED9"
     color_SNR300 = "#BFDAE9"
-    f = plt.figure(figsize = (4,2))
+    f = plt.figure(figsize = (2,3))
     # plt.xlim([0.05,2.0])
     # plt.ylim([30,100])
     # plt.plot(Δs,20*log.(SNR),marker="o")
@@ -43,11 +43,11 @@ begin
     plt.plot(Δs, SNR300, color=color_SNR300, label="300 Meas.")
 
     # Add labels and legend (optional)
-    plt.xlabel("Δ")
-    plt.ylabel("Linear SNR")
-    plt.legend(frameon=false, ncol=1, loc="lower right", bbox_to_anchor=(1.0, -0.04),fontsize = 8)
+    plt.xlabel(raw"$Δ_{\text{BCS}}$",fontsize = 12)
+    plt.ylabel("Linear SNR",fontsize = 12)
+    plt.legend(frameon=false, ncol=1, loc="lower right", bbox_to_anchor=(1.05, -0.01),fontsize = 9)
     plt.show()
-    # f.savefig("/Users/hyhu/Git_Code/Fermionic.jl/simple_Ham/SNR_v2.pdf",bbox_inches = "tight")
+    f.savefig("/Users/hyhu/Git_Code/Fermionic.jl/simple_Ham/SNR_v3.svg",bbox_inches = "tight")
 end
 
 Δ=0.2
