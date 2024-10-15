@@ -154,12 +154,17 @@ begin
 end
 max_value = maximum(abs.(rescaled_scalars))
 rescaled_scalars = (rescaled_scalars.+max_value)./(2*max_value)
+begin
+    plt.plot(rescaled_scalars,"o")
+    plt.show()
+end
+
 ### Test on plot the batches
 begin
     # Create a figure and axis
     fig, ax = plt.subplots(figsize = (3,3))
     boxstyle = "round,pad=0.02,rounding_size=0.1" 
-    colormap = cm.coolwarm
+    colormap = cm.seismic
     colors = colormap(rescaled_scalars)  # Map scalar values to colors
 
     # Add rectangles to the plot
@@ -179,7 +184,7 @@ begin
     ax.add_patch(
         patches.FancyBboxPatch(
             (10.75,9.75), 0.5, 1.5,
-            edgecolor="grey",
+            edgecolor="green",
             boxstyle=boxstyle,
             facecolor="whitesmoke",  # No fill
             hatch="//////",  # Diagonal stripes (you can use different patterns)
@@ -197,7 +202,7 @@ begin
     # cbar = fig.colorbar(sm, ax=ax)
     # cbar.set_label('Scalar Value')  # Optional: label for the color bar
     ax.axis("off")
-    fig.savefig("./bond_bond_correlation.svg",bbox_inches = "tight")
+    fig.savefig("./bond_bond_correlation_2.svg",bbox_inches = "tight")
     # Show plot
     plt.show()
 end
@@ -210,7 +215,7 @@ begin
     # Normalize the data based on its min and max
     norm = Normalize(vmin=np.min(data_values), vmax=np.max(data_values))
     # Create a colormap (you can use any colormap)
-    colormap = cm.coolwarm
+    colormap = cm.seismic
     # Create the ScalarMappable object to map the data to colors
     sm = plt.cm.ScalarMappable(cmap=colormap, norm=norm)
     # Create the color bar
@@ -219,6 +224,6 @@ begin
     # cbar.set_label("Data Value")  # Add a label for the color bar
     # Show the plot with the color bar
     plt.axis("off")
-    plt.savefig("./colorbar.svg",bbox_inches = "tight")
+    plt.savefig("./colorbar_2.svg",bbox_inches = "tight")
     plt.show()
 end
