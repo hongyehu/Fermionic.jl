@@ -11,6 +11,12 @@ function analytical_two_fermion(xi::Int64, yi::Int64, L::Int64, type::Symbol; μ
     end
     return res/(L^2)
 end
+
+analytical_two_fermion(0,1,10,:d;μ=0.5,Δ=0.1)
+analytical_two_fermion(0,-1,10,:d;μ=0.5,Δ=0.1)
+
+
+
 ########### Compare with analytical result on <c*_{0,0,up}c*_{xj,yj,down}c_{xk,yk,up}c_{xl,yl,down}>
 function analytical_four_fermion(xj::Int64,yj::Int64,xk::Int64,yk::Int64,xl::Int64,yl::Int64, L::Int64, type::Symbol; μ::Float64=0.5,Δ::Float64=5.0)
     res = 0.0+0.0im
@@ -30,6 +36,16 @@ function analytical_four_fermion(xj::Int64,yj::Int64,xk::Int64,yk::Int64,xl::Int
     end
     return -res./(L^4)
 end
+
+ori = analytical_four_fermion(0,1,0,-5,0,-6,10,:d;μ=0.5,Δ=0.1)
+singlet_sym = analytical_four_fermion(0,1,0,-5,0,-6,10,:d;μ=0.5,Δ=0.1)+analytical_four_fermion(0,1,0,-6,0,-5,10,:d;μ=0.5,Δ=0.1)+analytical_four_fermion(0,-1,0,-6,0,-7,10,:d;μ=0.5,Δ=0.1)+analytical_four_fermion(0,-1,0,-7,0,-6,10,:d;μ=0.5,Δ=0.1)
+triplet_sym = analytical_four_fermion(0,1,0,-5,0,-6,10,:d;μ=0.5,Δ=0.1)-analytical_four_fermion(0,1,0,-6,0,-5,10,:d;μ=0.5,Δ=0.1)-analytical_four_fermion(0,-1,0,-6,0,-7,10,:d;μ=0.5,Δ=0.1)+analytical_four_fermion(0,-1,0,-7,0,-6,10,:d;μ=0.5,Δ=0.1)
+triplet_sym
+singlet_sym
+
+
+
+
 ########### Analytical result on <c*_{0,0,up}c_{0,0,up}>, and system has translational invariance
 function analytical_n_up(L::Int64, type::Symbol; μ::Float64=0.5,Δ::Float64=5.0)
     res = 0.0+0.0im
